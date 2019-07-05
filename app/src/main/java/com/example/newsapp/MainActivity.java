@@ -6,11 +6,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.app.DownloadManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Window;
 import android.widget.TextView;
 
 
@@ -26,23 +24,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     RecyclerView news_list;
     TextView logo;
-    ArrayList<String> list=new ArrayList<>();
+    ArrayList<News> list=new ArrayList<>();
     String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
     @RequiresApi(api = Build.VERSION_CODES.M)
     @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        Objects.requireNonNull(getSupportActionBar()).hide();
         setContentView(R.layout.activity_main);
-        logo=findViewById(R.id.main_logo_tv);
-        logo.setTextColor(getResources().getColor(R.color.logo1,getResources().newTheme()));
+        //logo=findViewById(R.id.main_logo_tv);
+        //logo.setTextColor(getResources().getColor(R.color.logo1,getResources().newTheme()));
         news_list=findViewById(R.id.main_list_rv);
         final Adapter ad=new Adapter(this,list);
         news_list.setLayoutManager(new LinearLayoutManager(this));
@@ -60,13 +55,14 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Log.i("Mainak",a.toString());
                 try {
-                    Log.i("Mainak",a.getJSONObject(0).getString("title").toString());
+                    Log.i("Mainak",a.getJSONObject(0).getString("title"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
                 for(int i=0;i<a.length();i++){
                     try {
-                        list.add(a.getJSONObject(i).getString("title"));
+                        JSONObject temp=a.getJSONObject(i);
+                        list.add(new News(temp.getString("title"),temp.getString("urlToImage")));
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
