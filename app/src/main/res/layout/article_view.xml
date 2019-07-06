@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <WebView
-        android:id="@+id/article"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        tools:layout_editor_absoluteY="-3dp" />
+        android:id="@+id/details_container"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="254dp">
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
