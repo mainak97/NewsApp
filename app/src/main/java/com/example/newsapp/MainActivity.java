@@ -13,7 +13,10 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 
 import com.android.volley.Request;
@@ -37,6 +40,7 @@ public class MainActivity extends AppCompatActivity{
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mToggle;
     private Context mContext;
+    private Menu myMenu;
     ArrayList<News> list=new ArrayList<>();
     FragmentManager fm = getSupportFragmentManager();
     String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
@@ -46,11 +50,13 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         mContext=this;
         mDrawerLayout= findViewById(R.id.drawer);
         mToggle= new ActionBarDrawerToggle(this,mDrawerLayout,R.string.open,R.string.close);
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
+
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         NavigationView navigationView=findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -60,13 +66,13 @@ public class MainActivity extends AppCompatActivity{
                 switch (menuItem.getItemId()){
                     case R.id.nav_headline:
                         FragmentTransaction ft = fm.beginTransaction();
-                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm)).addToBackStack("tag");
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu)).addToBackStack("tag");
                         ft.commit();
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         break;
                     case R.id.nav_saved_list:
                         ft=fm.beginTransaction();
-                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm)).addToBackStack("tag");
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu)).addToBackStack("tag");
                         ft.commit();
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         break;
@@ -102,7 +108,7 @@ public class MainActivity extends AppCompatActivity{
                     }
                 }
                 FragmentTransaction ft = fm.beginTransaction();
-                ft.add(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm));
+                ft.add(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu));
                 ft.commit();
             }
         }, new Response.ErrorListener() {
@@ -115,12 +121,26 @@ public class MainActivity extends AppCompatActivity{
     }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item){
+
+        if(item.getItemId()==R.id.addButton){
+            Toast.makeText(this, "Menu Item Selected", Toast.LENGTH_SHORT).show();
+        }
         if(mToggle.onOptionsItemSelected(item))
             return true;
         return super.onOptionsItemSelected(item);
     }
     @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu_item1,menu);
+        myMenu=menu;
+        myMenu.findItem(R.id.addButton).setVisible(false);
+        return true;
+    }
+
+
+    @Override
     public void onBackPressed(){
+        myMenu.findItem(R.id.addButton).setVisible(false);
         if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
 

@@ -3,6 +3,7 @@ package com.example.newsapp;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
@@ -15,7 +16,9 @@ import androidx.fragment.app.Fragment;
 
 public class FragmentArticle extends Fragment{
     private String url;
-    FragmentArticle(String url){
+    private Menu myMenu;
+    FragmentArticle(String url,Menu myMenu){
+        this.myMenu=myMenu;
         this.url=url;
     }
     @Nullable
@@ -24,7 +27,9 @@ public class FragmentArticle extends Fragment{
 
         View view = inflater.inflate(R.layout.article_view_fragment,container,false);
         WebView t=view.findViewById(R.id.article_new);
+        myMenu.findItem(R.id.addButton).setVisible(true);
         t.loadUrl(url);
+
         //Toast.makeText(this.getContext(), "in framelayout", Toast.LENGTH_SHORT).show();
         /*t.setWebViewClient(new WebViewClient() {
             @Override
@@ -38,4 +43,5 @@ public class FragmentArticle extends Fragment{
         t.setWebViewClient(new WebViewClient());
         return view;
     }
+
 }

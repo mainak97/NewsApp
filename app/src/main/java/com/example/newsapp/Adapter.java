@@ -3,6 +3,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -24,9 +25,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     private Context mContext;
     private ArrayList<News> news;
     private FragmentManager fm;
-    public Adapter(Context context, ArrayList<News> response,FragmentManager fm){
+    private Menu myMenu;
+    public Adapter(Context context, ArrayList<News> response,FragmentManager fm, Menu myMenu){
         mContext= context;
         news=response;
+        this.myMenu=myMenu;
         this.fm=fm;
     }
     @NonNull
@@ -45,7 +48,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
             @Override
             public void onClick(View view) {
                 FragmentTransaction ft = fm.beginTransaction();
-                ft.add(R.id.headlines_list,new FragmentArticle(news.get(position).getArticle_url())).addToBackStack("tag");
+                ft.add(R.id.headlines_list,new FragmentArticle(news.get(position).getArticle_url(),myMenu)).addToBackStack("tag");
                 ft.commit();
             }
         });
