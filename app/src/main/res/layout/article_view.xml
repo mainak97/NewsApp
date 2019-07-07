@@ -4,11 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/details_container"
         tools:layout_editor_absoluteX="16dp"
-        tools:layout_editor_absoluteY="254dp">
+        tools:layout_editor_absoluteY="254dp"
+        >
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

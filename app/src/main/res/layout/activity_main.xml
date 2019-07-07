@@ -5,11 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:background="#212121"
     android:orientation="vertical">
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/main_list_rv"
         android:layout_width="match_parent"
+        android:paddingTop="5dp"
         android:layout_height="match_parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
