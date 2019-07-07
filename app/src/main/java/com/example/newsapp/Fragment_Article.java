@@ -26,7 +26,13 @@ public class Fragment_Article extends Fragment {
         View view = inflater.inflate(R.layout.fragment,container,false);
         WebView t=view.findViewById(R.id.article_new);
         t.loadUrl(url);
-        Toast.makeText(this.getContext(), "in framelayout", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this.getContext(), "in framelayout", Toast.LENGTH_SHORT).show();
+        /*t.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return true;
+            }
+        });*/
         WebSettings webSettings = t.getSettings();
         webSettings.setJavaScriptEnabled(true);
 
