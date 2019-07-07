@@ -1,7 +1,6 @@
 package com.example.newsapp;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +11,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
@@ -22,12 +23,11 @@ import java.util.ArrayList;
 public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     private Context mContext;
     private ArrayList<News> news;
-    public Adapter(Context context, ArrayList<News> response){
+    private FragmentManager fm;
+    public Adapter(Context context, ArrayList<News> response,FragmentManager fm){
         mContext= context;
         news=response;
-    }
-    public void addNews(ArrayList<News> a){
-        news.addAll(a);
+        this.fm=fm;
     }
     @NonNull
     @Override
@@ -44,11 +44,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         holder.card_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent x=new Intent(mContext,ArticleView.class).putExtra("news",news.get(position));
-                mContext.startActivity(x);
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.add(R.id.headlines_list,new FragmentArticle(news.get(position).getArticle_url())).addToBackStack("tag");
+                ft.commit();
             }
         });
-        Picasso.get().load(news.get(position).getImage_url()).fit().into(holder.news_card);
+        Picasso.get().load(news.get(position).getImage_url()).fit().centerCrop().into(holder.news_card);
     }
 
 
