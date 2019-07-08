@@ -17,6 +17,13 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         app:menu="@menu/side_menu"
+
         android:id="@+id/nav_view"/>
+
+    <ProgressBar
+        android:id="@+id/loadingFirst"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="175sp" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
