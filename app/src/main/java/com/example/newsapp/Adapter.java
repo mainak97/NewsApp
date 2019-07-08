@@ -52,7 +52,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
                 ft.commit();
             }
         });
-        Picasso.get().load(news.get(position).getImage_url()).fit().centerCrop().into(holder.news_card);
+        Picasso.get()
+                .load(news.get(position).getImage_url())
+                .fit()
+                .centerCrop()
+                .placeholder(R.drawable.imageload)
+                .into(holder.news_card);
     }
 
 

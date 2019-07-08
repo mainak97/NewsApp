@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity{
     private ActionBarDrawerToggle mToggle;
     private Context mContext;
     private Menu myMenu;
+    private ProgressBar loadingFirst;
     ArrayList<News> list=new ArrayList<>();
     FragmentManager fm = getSupportFragmentManager();
     String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
@@ -50,6 +52,8 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        loadingFirst=findViewById(R.id.loadingFirst);
 
         mContext=this;
         mDrawerLayout= findViewById(R.id.drawer);
@@ -87,6 +91,7 @@ public class MainActivity extends AppCompatActivity{
             @Override
             public void onResponse(JSONObject response) {
                 JSONArray a = null;
+                loadingFirst.setVisibility(View.INVISIBLE);
                 Log.i("Mainak", "onResponse: "+response.toString());
                 try {
                     a=response.getJSONArray("articles");
@@ -150,18 +155,7 @@ public class MainActivity extends AppCompatActivity{
     }
     /*
 
-    plus button on the right side of the appbar needs to be added dynamically some other way.
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu){
-        getMenuInflater().inflate(R.menu.menu_item1,menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem menuitem){
-        Toast.makeText(this, "Menu clicked", Toast.LENGTH_SHORT).show();
-        return true;
-    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
