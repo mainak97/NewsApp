@@ -17,35 +17,35 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 public class FragmentArticle extends Fragment{
-    private String url;
+    private News news;
     private Menu myMenu;
 
     private WebView webview;
     private ProgressBar spinner;
     String showHideInitialUse="show";
-    FragmentArticle(String url,Menu myMenu){
+    FragmentArticle(News news,Menu myMenu){
         this.myMenu=myMenu;
-        this.url=url;
+        this.news=news;
     }
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.article_view_fragment,container,false);
         spinner=view.findViewById(R.id.loadingPage);
         webview=view.findViewById(R.id.article_new);
-
-
         myMenu.findItem(R.id.addButton).setVisible(true);
-
-
+        if(news.isSaved())
+            myMenu.findItem(R.id.addButton).setIcon(R.drawable.ic_done_black_24dp);
+        else
+            myMenu.findItem(R.id.addButton).setIcon(R.drawable.add);
         webview.setWebViewClient(new CustomWebViewClient());
         WebSettings webSettings = webview.getSettings();
         webSettings.setJavaScriptEnabled(true);
         // Force links and redirects to open in the WebView instead of in a browser
-        webview.loadUrl(url);
+        webview.loadUrl(news.getArticle_url());
         return view;
     }
+
     private class CustomWebViewClient extends WebViewClient{
         @Override
         public void onPageStarted(WebView webview, String url, Bitmap favicon){

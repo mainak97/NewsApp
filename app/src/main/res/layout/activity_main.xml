@@ -10,20 +10,32 @@
     android:id="@+id/drawer">
     <FrameLayout
         android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/no_articles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/no_articles_saved_yet"
+            android:gravity="center"
+            android:textSize="30sp"
+            android:fontFamily="@font/adamina"
+            tools:ignore="UnusedAttribute"
+            android:visibility="invisible"/>
+    </FrameLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/headlines_list"/>
-    <com.google.android.material.navigation.NavigationView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/side_menu"
-
-        android:id="@+id/nav_view"/>
-
     <ProgressBar
         android:id="@+id/loadingFirst"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="175sp" />
+    <com.google.android.material.navigation.NavigationView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/side_menu"
+        android:id="@+id/nav_view"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

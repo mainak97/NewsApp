@@ -20,13 +20,15 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import io.realm.RealmResults;
+
 
 public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     private Context mContext;
-    private ArrayList<News> news;
+    private RealmResults<News> news;
     private FragmentManager fm;
     private Menu myMenu;
-    public Adapter(Context context, ArrayList<News> response,FragmentManager fm, Menu myMenu){
+    public Adapter(Context context, RealmResults<News> response, FragmentManager fm, Menu myMenu){
         mContext= context;
         news=response;
         this.myMenu=myMenu;
@@ -48,7 +50,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
             @Override
             public void onClick(View view) {
                 FragmentTransaction ft = fm.beginTransaction();
-                ft.add(R.id.headlines_list,new FragmentArticle(news.get(position).getArticle_url(),myMenu)).addToBackStack("tag");
+                ft.replace(R.id.headlines_list,new FragmentArticle(news.get(position),myMenu)).addToBackStack("tag");
                 ft.commit();
             }
         });
@@ -59,8 +61,6 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
                 .placeholder(R.drawable.imageload)
                 .into(holder.news_card);
     }
-
-
     @Override
     public int getItemCount() {
         return news.size();

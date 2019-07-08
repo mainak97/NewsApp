@@ -16,7 +16,9 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -31,9 +33,14 @@ import com.google.android.material.navigation.NavigationView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Objects;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
+import io.realm.Sort;
 
 import static android.os.Build.VERSION_CODES.M;
 
@@ -43,24 +50,27 @@ public class MainActivity extends AppCompatActivity{
     private Context mContext;
     private Menu myMenu;
     private ProgressBar loadingFirst;
-    ArrayList<News> list=new ArrayList<>();
+    private TextView no_article;
+    RealmResults<News> list;
+    RealmResults<News> saved_list;
+    RealmResults<News> current_list;
     FragmentManager fm = getSupportFragmentManager();
+    Realm r;
     String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
     @RequiresApi(api = M)
     @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        r=Realm.getDefaultInstance();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         loadingFirst=findViewById(R.id.loadingFirst);
-
         mContext=this;
         mDrawerLayout= findViewById(R.id.drawer);
         mToggle= new ActionBarDrawerToggle(this,mDrawerLayout,R.string.open,R.string.close);
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
-
+        no_article=findViewById(R.id.no_articles);
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         NavigationView navigationView=findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -72,12 +82,20 @@ public class MainActivity extends AppCompatActivity{
                         FragmentTransaction ft = fm.beginTransaction();
                         ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu)).addToBackStack("tag");
                         ft.commit();
+                        current_list=list;
                         mDrawerLayout.closeDrawer(GravityCompat.START);
+                        no_article.setVisibility(View.INVISIBLE);
                         break;
                     case R.id.nav_saved_list:
+                        saved_list=r.where(News.class).equalTo("saved",true).findAll().sort("timestamp",Sort.DESCENDING);
                         ft=fm.beginTransaction();
-                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu)).addToBackStack("tag");
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,saved_list,fm,myMenu)).addToBackStack("tag");
                         ft.commit();
+                        current_list=saved_list;
+                        if(current_list.size()==0)
+                            no_article.setVisibility(View.VISIBLE);
+                        else
+                            no_article.setVisibility(View.INVISIBLE);
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         break;
                 }
@@ -104,17 +122,25 @@ public class MainActivity extends AppCompatActivity{
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                Realm r=Realm.getDefaultInstance();
                 for(int i=0;i<a.length();i++){
                     try {
-                        JSONObject temp=a.getJSONObject(i);
-                        list.add(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url")));
-                    } catch (JSONException e) {
+                        JSONObject temp = a.getJSONObject(i);
+                        r.beginTransaction();
+                        r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url")));
+                        r.commitTransaction();
+                    }
+                    catch (Exception e) {
+                        r.cancelTransaction();
                         e.printStackTrace();
                     }
                 }
+                list=r.where(News.class).findAll().sort("timestamp", Sort.DESCENDING);
                 FragmentTransaction ft = fm.beginTransaction();
+                Log.i("mainak",String.valueOf(list.size()));
                 ft.add(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu));
                 ft.commit();
+                current_list=list;
             }
         }, new Response.ErrorListener() {
             @Override
@@ -126,9 +152,41 @@ public class MainActivity extends AppCompatActivity{
     }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item){
-
         if(item.getItemId()==R.id.addButton){
-            Toast.makeText(this, "Menu Item Selected", Toast.LENGTH_SHORT).show();
+            WebView w=findViewById(R.id.article_new);
+            News temp=r.where(News.class).equalTo("article_url",w.getUrl()).findFirst();
+            //Log.i("Mainak",w.getUrl());Log.i("Mainak",temp.toString());
+            if(temp==null){
+                Toast.makeText(this,"Cannot Save Youtube Video",Toast.LENGTH_SHORT).show();
+                return true;
+            }
+            if(temp.isSaved()) {
+                item.setIcon(R.drawable.add);
+                r.beginTransaction();
+                r.where(News.class).equalTo("article_url", w.getUrl()).findFirst().setSaved(false);
+                r.commitTransaction();
+                FragmentTransaction ft=fm.beginTransaction();
+                getSupportFragmentManager().popBackStack();
+                ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,current_list,fm,myMenu));
+                ft.commit();
+                if(current_list==list)
+                    ((NavigationView)findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_headline);
+                else
+                    ((NavigationView)findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_saved_list);
+                if(current_list.size()==0)
+                    findViewById(R.id.no_articles).setVisibility(View.VISIBLE);
+                else
+                    findViewById(R.id.no_articles).setVisibility(View.INVISIBLE);
+                Toast.makeText(this,"Removed from saved articles",Toast.LENGTH_SHORT).show();
+            }
+            else{
+                item.setIcon(R.drawable.ic_done_black_24dp);
+                r.beginTransaction();
+                r.where(News.class).equalTo("article_url", w.getUrl()).findFirst().setSaved(true);
+                r.commitTransaction();
+                no_article.setVisibility(View.INVISIBLE);
+                Toast.makeText(this,"Added to saved articles",Toast.LENGTH_SHORT).show();
+            }
         }
         if(mToggle.onOptionsItemSelected(item))
             return true;
@@ -142,22 +200,31 @@ public class MainActivity extends AppCompatActivity{
         return true;
     }
 
-
     @Override
     public void onBackPressed(){
+        if(!myMenu.findItem(R.id.addButton).isVisible()){
+            if(current_list==list)
+                current_list=saved_list;
+            else
+                current_list=list;
+        }
+        Log.i("Mainak",String.valueOf(getSupportFragmentManager().getBackStackEntryCount()));
+        if(getSupportFragmentManager().getBackStackEntryCount()==0)
+            super.onBackPressed();
+        if(current_list!=null&&current_list.size()==0)
+            findViewById(R.id.no_articles).setVisibility(View.VISIBLE);
+        else
+            findViewById(R.id.no_articles).setVisibility(View.INVISIBLE);
         myMenu.findItem(R.id.addButton).setVisible(false);
         if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
-
         }
         else
             super.onBackPressed();
     }
-    /*
-
-
     @Override
     protected void onDestroy() {
+        r.close();
         super.onDestroy();
-    }*/
+    }
 }

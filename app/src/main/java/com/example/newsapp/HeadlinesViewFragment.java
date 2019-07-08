@@ -16,19 +16,24 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
+
 public class HeadlinesViewFragment extends Fragment {
     private Context mContext;
-    private ArrayList<News> news;
+    private RealmResults<News> news;
     private FragmentManager fm;
     private Menu myMenu;
-    public HeadlinesViewFragment(Context context, ArrayList<News> news, FragmentManager fm, Menu myMenu){
+    private View view;
+    private Realm r=Realm.getDefaultInstance();
+    public HeadlinesViewFragment(Context context, RealmResults<News> news, FragmentManager fm, Menu myMenu){
         mContext=context;
         this.news=news;
         this.fm=fm;
         this.myMenu=myMenu;
     }
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.headlines_view_fragment,container,false);
+        view = inflater.inflate(R.layout.headlines_view_fragment,container,false);
         myMenu.findItem(R.id.addButton).setVisible(false);
         RecyclerView news_list=view.findViewById(R.id.main_list_rv);
         final Adapter ad=new Adapter(mContext,news,fm,myMenu);
