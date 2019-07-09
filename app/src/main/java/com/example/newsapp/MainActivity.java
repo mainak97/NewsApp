@@ -2,6 +2,7 @@ package com.example.newsapp;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -57,6 +58,9 @@ public class MainActivity extends AppCompatActivity{
     RealmResults<News> current_list;
     FragmentManager fm = getSupportFragmentManager();
     Realm r;
+    ActionBar actionBar;
+    MenuItem headlinesDrawer;
+    MenuItem savedDrawer;
 
     String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
     @RequiresApi(api = M)
@@ -66,6 +70,10 @@ public class MainActivity extends AppCompatActivity{
         r=Realm.getDefaultInstance();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        actionBar=getSupportActionBar();
+        actionBar.setTitle("Headlines");
+
         loadingFirst=findViewById(R.id.loadingFirst);
         mContext=this;
         mDrawerLayout= findViewById(R.id.drawer);
@@ -73,8 +81,14 @@ public class MainActivity extends AppCompatActivity{
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
         no_article=findViewById(R.id.no_articles);
+        //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+
+
         NavigationView navigationView=findViewById(R.id.nav_view);
+        Menu menu1=navigationView.getMenu();
+        headlinesDrawer=menu1.findItem(R.id.nav_headline);
+        savedDrawer=menu1.findItem(R.id.nav_saved_list);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
@@ -82,8 +96,10 @@ public class MainActivity extends AppCompatActivity{
                 switch (menuItem.getItemId()){
                     case R.id.nav_headline:
                         FragmentTransaction ft = fm.beginTransaction();
-                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu)).addToBackStack("tag");
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar),"HEADLINES").addToBackStack("HEADLINES");
+                        actionBar.setTitle("Headlines");
                         ft.commit();
+                        //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
                         current_list=list;
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         no_article.setVisibility(View.INVISIBLE);
@@ -91,8 +107,10 @@ public class MainActivity extends AppCompatActivity{
                     case R.id.nav_saved_list:
                         saved_list=r.where(News.class).equalTo("saved",true).findAll().sort("timestamp",Sort.DESCENDING);
                         ft=fm.beginTransaction();
-                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,saved_list,fm,myMenu)).addToBackStack("tag");
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,saved_list,fm,myMenu,actionBar),"SAVED").addToBackStack("SAVED");
                         ft.commit();
+                       // Toast.makeText(mContext, "Saved Articles", Toast.LENGTH_SHORT).show();
+                        actionBar.setTitle("Saved Articles");
                         current_list=saved_list;
                         if(current_list.size()==0)
                             no_article.setVisibility(View.VISIBLE);
@@ -141,7 +159,7 @@ public class MainActivity extends AppCompatActivity{
                 list=r.where(News.class).findAll().sort("timestamp", Sort.DESCENDING);
                 FragmentTransaction ft = fm.beginTransaction();
                 Log.i("mainak",String.valueOf(list.size()));
-                ft.add(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu));
+                ft.add(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar));
                 ft.commit();
                 current_list=list;
             }
@@ -201,8 +219,10 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.menu_item1,menu);
+
         myMenu=menu;
         myMenu.findItem(R.id.addButton).setVisible(false);
+
         return true;
     }
 
@@ -213,11 +233,14 @@ public class MainActivity extends AppCompatActivity{
             return;
         }
         if(!myMenu.findItem(R.id.addButton).isVisible()){
-            if(current_list==list)
+            if(current_list==list){
                 current_list=saved_list;
-            else
+            }
+            else{
                 current_list=list;
+            }
         }
+
 
         Log.i("Mainak",String.valueOf(getSupportFragmentManager().getBackStackEntryCount()));
 
@@ -241,12 +264,30 @@ public class MainActivity extends AppCompatActivity{
         myMenu.findItem(R.id.addButton).setVisible(false);
 
 
-        /*if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
+        super.onBackPressed();
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+           // Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
+            actionBar.setTitle("Headlines");
+            headlinesDrawer.setChecked(true);
+
+            return ;
         }
-        else*/
-            super.onBackPressed();
+        String tag = getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount()-1 ).getName();
+        if(tag.equals("SAVED")){
+            //Toast.makeText(mContext, "Saved Articles", Toast.LENGTH_SHORT).show();
+            actionBar.setTitle("Saved Articles");
+            savedDrawer.setChecked(true);
+        }
+        else if(tag.equals("HEADLINES"))
+        {
+            Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
+            actionBar.setTitle("Headlines");
+            headlinesDrawer.setChecked(true);
+        }
+
     }
+
+
     @Override
     protected void onDestroy() {
         r.close();

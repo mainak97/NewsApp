@@ -1,5 +1,6 @@
 package com.example.newsapp;
 import android.annotation.SuppressLint;
+import androidx.appcompat.app.ActionBar;
 import android.content.Context;
 import android.os.Build;
 import android.view.LayoutInflater;
@@ -27,10 +28,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     private Context mContext;
     private RealmResults<News> news;
     private FragmentManager fm;
+    private ActionBar actionBar;
     private Menu myMenu;
-    public Adapter(Context context, RealmResults<News> response, FragmentManager fm, Menu myMenu){
+    public Adapter(Context context, RealmResults<News> response, FragmentManager fm, Menu myMenu, ActionBar actionBar){
         mContext= context;
         news=response;
+        this.actionBar=actionBar;
         this.myMenu=myMenu;
         this.fm=fm;
     }
@@ -46,11 +49,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
         holder.test.setText(news.get(position).getTitle());
+
         holder.card_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 FragmentTransaction ft = fm.beginTransaction();
-                ft.replace(R.id.headlines_list,new FragmentArticle(news.get(position),myMenu)).addToBackStack("tag");
+                ft.replace(R.id.headlines_list,new FragmentArticle(news.get(position),myMenu,actionBar)).addToBackStack("tag");
                 ft.commit();
             }
         });

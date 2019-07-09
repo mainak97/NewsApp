@@ -1,5 +1,6 @@
 package com.example.newsapp;
 
+import androidx.appcompat.app.ActionBar;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -25,18 +26,20 @@ public class HeadlinesViewFragment extends Fragment {
     private FragmentManager fm;
     private Menu myMenu;
     private View view;
+    private ActionBar actionBar;
     private Realm r=Realm.getDefaultInstance();
-    public HeadlinesViewFragment(Context context, RealmResults<News> news, FragmentManager fm, Menu myMenu){
+    public HeadlinesViewFragment(Context context, RealmResults<News> news, FragmentManager fm, Menu myMenu, ActionBar actionBar){
         mContext=context;
         this.news=news;
         this.fm=fm;
+        this.actionBar=actionBar;
         this.myMenu=myMenu;
     }
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.headlines_view_fragment,container,false);
         myMenu.findItem(R.id.addButton).setVisible(false);
         RecyclerView news_list=view.findViewById(R.id.main_list_rv);
-        final Adapter ad=new Adapter(mContext,news,fm,myMenu);
+        final Adapter ad=new Adapter(mContext,news,fm,myMenu,actionBar);
         news_list.setLayoutManager(new LinearLayoutManager(mContext));
         news_list.setAdapter(ad);
         return view;
