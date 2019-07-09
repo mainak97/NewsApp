@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class FragmentArticle extends Fragment{
     private News news;
@@ -24,9 +25,11 @@ public class FragmentArticle extends Fragment{
     private ActionBar actionBar;
     private WebView webview;
     private ProgressBar spinner;
+    private SwipeRefreshLayout mSwipeRefresh;
     String showHideInitialUse="show";
-    FragmentArticle(News news,Menu myMenu, ActionBar actionBar){
+    FragmentArticle(News news, Menu myMenu, ActionBar actionBar, SwipeRefreshLayout mSwipeRefresh){
         this.myMenu=myMenu;
+        this.mSwipeRefresh=mSwipeRefresh;
         this.actionBar=actionBar;
         this.news=news;
     }
@@ -37,6 +40,7 @@ public class FragmentArticle extends Fragment{
         spinner=view.findViewById(R.id.loadingPage);
         webview=view.findViewById(R.id.article_new);
         webview.setVisibility(webview.INVISIBLE);
+        mSwipeRefresh.setEnabled(false);
         actionBar.setTitle("News Article");
         myMenu.findItem(R.id.addButton).setVisible(true);
         //Toast.makeText(getActivity(), "Article", Toast.LENGTH_SHORT).show();

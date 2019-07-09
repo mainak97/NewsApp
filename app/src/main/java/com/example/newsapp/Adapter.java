@@ -16,6 +16,7 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.squareup.picasso.Picasso;
 
@@ -29,10 +30,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     private RealmResults<News> news;
     private FragmentManager fm;
     private ActionBar actionBar;
+    private SwipeRefreshLayout mSwipeRefresh;
     private Menu myMenu;
-    public Adapter(Context context, RealmResults<News> response, FragmentManager fm, Menu myMenu, ActionBar actionBar){
+    public Adapter(Context context, RealmResults<News> response, FragmentManager fm, Menu myMenu, ActionBar actionBar, SwipeRefreshLayout mSwipeRefresh){
         mContext= context;
         news=response;
+        this.mSwipeRefresh=mSwipeRefresh;
         this.actionBar=actionBar;
         this.myMenu=myMenu;
         this.fm=fm;
@@ -54,7 +57,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
             @Override
             public void onClick(View view) {
                 FragmentTransaction ft = fm.beginTransaction();
-                ft.replace(R.id.headlines_list,new FragmentArticle(news.get(position),myMenu,actionBar)).addToBackStack("tag");
+                ft.replace(R.id.headlines_list,new FragmentArticle(news.get(position),myMenu,actionBar,mSwipeRefresh)).addToBackStack("tag");
                 ft.commit();
             }
         });

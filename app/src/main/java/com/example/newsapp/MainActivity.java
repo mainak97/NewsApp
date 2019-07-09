@@ -9,6 +9,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity{
     ActionBar actionBar;
     MenuItem headlinesDrawer;
     MenuItem savedDrawer;
+    private SwipeRefreshLayout mSwipeRefresh;
 
     String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
     @RequiresApi(api = M)
@@ -81,6 +83,7 @@ public class MainActivity extends AppCompatActivity{
         mDrawerLayout.addDrawerListener(mToggle);
         mToggle.syncState();
         no_article=findViewById(R.id.no_articles);
+        mSwipeRefresh=findViewById(R.id.swipeRefresh);
         //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
@@ -96,9 +99,10 @@ public class MainActivity extends AppCompatActivity{
                 switch (menuItem.getItemId()){
                     case R.id.nav_headline:
                         FragmentTransaction ft = fm.beginTransaction();
-                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar),"HEADLINES").addToBackStack("HEADLINES");
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
                         actionBar.setTitle("Headlines");
                         ft.commit();
+                        mSwipeRefresh.setEnabled(true);
                         //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
                         current_list=list;
                         mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -107,8 +111,9 @@ public class MainActivity extends AppCompatActivity{
                     case R.id.nav_saved_list:
                         saved_list=r.where(News.class).equalTo("saved",true).findAll().sort("timestamp",Sort.DESCENDING);
                         ft=fm.beginTransaction();
-                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,saved_list,fm,myMenu,actionBar),"SAVED").addToBackStack("SAVED");
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,saved_list,fm,myMenu,actionBar,mSwipeRefresh),"SAVED").addToBackStack("SAVED");
                         ft.commit();
+                        mSwipeRefresh.setEnabled(false);
                        // Toast.makeText(mContext, "Saved Articles", Toast.LENGTH_SHORT).show();
                         actionBar.setTitle("Saved Articles");
                         current_list=saved_list;
@@ -123,47 +128,68 @@ public class MainActivity extends AppCompatActivity{
             }
         });
         navigationView.setCheckedItem(R.id.nav_headline);
+        loadData(1);
+        mSwipeRefresh.setEnabled(true);
+        mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                loadData(0);
+            }
+        });
+
+    }
+
+    public void loadData(final int addReplace){
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         String extraUrl="&rand="+(int)(Math.random()*10000);
         JsonObjectRequest request=new JsonObjectRequest(Request.Method.GET, url+extraUrl,null,
                 new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                JSONArray a = null;
-                loadingFirst.setVisibility(View.INVISIBLE);
-                Log.i("Mainak", "onResponse: "+response.toString());
-                try {
-                    a=response.getJSONArray("articles");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                Log.i("Mainak",a.toString());
-                try {
-                    Log.i("Mainak",a.getJSONObject(0).getString("title"));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                Realm r=Realm.getDefaultInstance();
-                for(int i=0;i<a.length();i++){
-                    try {
-                        JSONObject temp = a.getJSONObject(i);
-                        r.beginTransaction();
-                        r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url")));
-                        r.commitTransaction();
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        JSONArray a = null;
+                        loadingFirst.setVisibility(View.INVISIBLE);
+                        Log.i("Mainak", "onResponse: "+response.toString());
+                        try {
+                            a=response.getJSONArray("articles");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        Log.i("Mainak",a.toString());
+                        try {
+                            Log.i("Mainak",a.getJSONObject(0).getString("title"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        Realm r=Realm.getDefaultInstance();
+                        for(int i=0;i<a.length();i++){
+                            try {
+                                JSONObject temp = a.getJSONObject(i);
+                                r.beginTransaction();
+                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url")));
+                                r.commitTransaction();
+                            }
+                            catch (Exception e) {
+                                r.cancelTransaction();
+                                e.printStackTrace();
+                            }
+                        }
+                        list=r.where(News.class).findAll().sort("timestamp", Sort.DESCENDING);
+                        FragmentTransaction ft = fm.beginTransaction();
+                        Log.i("mainak",String.valueOf(list.size()));
+                        if(addReplace==1)
+                        ft.add(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh));
+                        else{
+                            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
+                            Toast.makeText(mContext, "News updated", Toast.LENGTH_SHORT).show();
+                            mSwipeRefresh.setRefreshing(false);
+                        }
+
+                        ft.commit();
+
+                            current_list=list;
+
                     }
-                    catch (Exception e) {
-                        r.cancelTransaction();
-                        e.printStackTrace();
-                    }
-                }
-                list=r.where(News.class).findAll().sort("timestamp", Sort.DESCENDING);
-                FragmentTransaction ft = fm.beginTransaction();
-                Log.i("mainak",String.valueOf(list.size()));
-                ft.add(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar));
-                ft.commit();
-                current_list=list;
-            }
-        }, new Response.ErrorListener() {
+                }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e("Mainak", "onErrorResponse: "+error.getMessage());
@@ -171,6 +197,7 @@ public class MainActivity extends AppCompatActivity{
         });
         requestQueue.add(request);
     }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item){
         if(item.getItemId()==R.id.addButton){
@@ -276,12 +303,14 @@ public class MainActivity extends AppCompatActivity{
         if(tag.equals("SAVED")){
             //Toast.makeText(mContext, "Saved Articles", Toast.LENGTH_SHORT).show();
             actionBar.setTitle("Saved Articles");
+            mSwipeRefresh.setEnabled(false);
             savedDrawer.setChecked(true);
         }
         else if(tag.equals("HEADLINES"))
         {
-            Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
             actionBar.setTitle("Headlines");
+            mSwipeRefresh.setEnabled(true);
             headlinesDrawer.setChecked(true);
         }
 
