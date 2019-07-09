@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity{
     private ActionBarDrawerToggle mToggle;
     private Context mContext;
     private Menu myMenu;
+    private int exitFlag=1;
     private ProgressBar loadingFirst;
     private TextView no_article;
     RealmResults<News> list;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity{
     RealmResults<News> current_list;
     FragmentManager fm = getSupportFragmentManager();
     Realm r;
+
     String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
     @RequiresApi(api = M)
     @SuppressLint("ResourceAsColor")
@@ -104,7 +106,8 @@ public class MainActivity extends AppCompatActivity{
         });
         navigationView.setCheckedItem(R.id.nav_headline);
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        JsonObjectRequest request=new JsonObjectRequest(Request.Method.GET, url,null,
+        String extraUrl="&rand="+(int)(Math.random()*10000);
+        JsonObjectRequest request=new JsonObjectRequest(Request.Method.GET, url+extraUrl,null,
                 new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
@@ -165,10 +168,13 @@ public class MainActivity extends AppCompatActivity{
                 r.beginTransaction();
                 r.where(News.class).equalTo("article_url", w.getUrl()).findFirst().setSaved(false);
                 r.commitTransaction();
+                /*
                 FragmentTransaction ft=fm.beginTransaction();
                 getSupportFragmentManager().popBackStack();
                 ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,current_list,fm,myMenu));
-                ft.commit();
+                ft.commit();*/
+
+
                 if(current_list==list)
                     ((NavigationView)findViewById(R.id.nav_view)).setCheckedItem(R.id.nav_headline);
                 else
@@ -202,24 +208,43 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     public void onBackPressed(){
+        if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+            return;
+        }
         if(!myMenu.findItem(R.id.addButton).isVisible()){
             if(current_list==list)
                 current_list=saved_list;
             else
                 current_list=list;
         }
+
         Log.i("Mainak",String.valueOf(getSupportFragmentManager().getBackStackEntryCount()));
-        if(getSupportFragmentManager().getBackStackEntryCount()==0)
+
+        if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==0)
             super.onBackPressed();
-        if(current_list!=null&&current_list.size()==0)
+        else if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==1){
+            Toast.makeText(mContext, "Press back again to exit", Toast.LENGTH_SHORT).show();
+            exitFlag=0;
+            return;
+        }else{
+            exitFlag=1;
+        }
+
+
+        if(current_list!=null && current_list.size()==0)
             findViewById(R.id.no_articles).setVisibility(View.VISIBLE);
         else
             findViewById(R.id.no_articles).setVisibility(View.INVISIBLE);
+
+
         myMenu.findItem(R.id.addButton).setVisible(false);
-        if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+
+
+        /*if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
         }
-        else
+        else*/
             super.onBackPressed();
     }
     @Override
