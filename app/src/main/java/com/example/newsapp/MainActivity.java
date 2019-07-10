@@ -179,7 +179,7 @@ public class MainActivity extends AppCompatActivity{
                         if(addReplace==1)
                         ft.add(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh));
                         else{
-                            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
+                            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");//.addToBackStack("HEADLINES");
                             Toast.makeText(mContext, "News updated", Toast.LENGTH_SHORT).show();
                             mSwipeRefresh.setRefreshing(false);
                         }
