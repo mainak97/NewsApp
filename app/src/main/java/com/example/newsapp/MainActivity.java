@@ -13,12 +13,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +64,7 @@ public class MainActivity extends AppCompatActivity{
     ActionBar actionBar;
     MenuItem headlinesDrawer;
     MenuItem savedDrawer;
+    private FrameLayout headlineFrame;
     private SwipeRefreshLayout mSwipeRefresh;
 
     String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
@@ -75,6 +78,8 @@ public class MainActivity extends AppCompatActivity{
 
         actionBar=getSupportActionBar();
         actionBar.setTitle("Headlines");
+        headlineFrame=findViewById(R.id.headlines_list);
+        headlineFrame.setBackgroundColor(Color.WHITE);
 
         loadingFirst=findViewById(R.id.loadingFirst);
         mContext=this;
@@ -101,6 +106,7 @@ public class MainActivity extends AppCompatActivity{
                         FragmentTransaction ft = fm.beginTransaction();
                         ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
                         actionBar.setTitle("Headlines");
+                        headlineFrame.setBackgroundColor(Color.WHITE);
                         ft.commit();
                         mSwipeRefresh.setEnabled(true);
                         //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
@@ -115,6 +121,7 @@ public class MainActivity extends AppCompatActivity{
                         ft.commit();
                         mSwipeRefresh.setEnabled(false);
                        // Toast.makeText(mContext, "Saved Articles", Toast.LENGTH_SHORT).show();
+                        headlineFrame.setBackgroundColor(Color.TRANSPARENT);
                         actionBar.setTitle("Saved Articles");
                         current_list=saved_list;
                         if(current_list.size()==0)
@@ -296,13 +303,14 @@ public class MainActivity extends AppCompatActivity{
            // Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
             actionBar.setTitle("Headlines");
             headlinesDrawer.setChecked(true);
-
+            headlineFrame.setBackgroundColor(Color.WHITE);
             return ;
         }
         String tag = getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount()-1 ).getName();
         if(tag.equals("SAVED")){
             //Toast.makeText(mContext, "Saved Articles", Toast.LENGTH_SHORT).show();
             actionBar.setTitle("Saved Articles");
+            headlineFrame.setBackgroundColor(Color.TRANSPARENT);
             mSwipeRefresh.setEnabled(false);
             savedDrawer.setChecked(true);
         }
@@ -310,6 +318,7 @@ public class MainActivity extends AppCompatActivity{
         {
             //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
             actionBar.setTitle("Headlines");
+            headlineFrame.setBackgroundColor(Color.WHITE);
             mSwipeRefresh.setEnabled(true);
             headlinesDrawer.setChecked(true);
         }
