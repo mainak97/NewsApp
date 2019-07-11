@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -13,7 +14,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -37,9 +41,6 @@ import com.google.android.material.navigation.NavigationView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
 import java.util.Objects;
 
 import io.realm.Realm;
@@ -147,6 +148,11 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void loadData(final int addReplace){
+        if(!haveNetworkConnection()){
+            exitDialog(addReplace);
+            return;
+        }
+        Toast.makeText(mContext, "Fetching", Toast.LENGTH_SHORT).show();
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         String extraUrl="&rand="+(int)(Math.random()*10000);
         JsonObjectRequest request=new JsonObjectRequest(Request.Method.GET, url+extraUrl,null,
@@ -205,9 +211,46 @@ public class MainActivity extends AppCompatActivity{
         requestQueue.add(request);
     }
 
+    private boolean haveNetworkConnection() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        boolean isConnected = false;
+        if (connectivityManager != null) {
+            NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+            isConnected = (activeNetwork != null) && (activeNetwork.isConnectedOrConnecting());
+        }
+
+        return isConnected;
+    }
+
+        public void exitDialog(final int a){
+            if(haveNetworkConnection()){
+                loadData(a);
+                return;
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Network Error!");
+            builder.setMessage("Please connect to the internet!")
+                    .setCancelable(false);
+            builder.setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                }});
+            builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    exitDialog(a);
+                }});
+
+                    AlertDialog alert = builder.create();
+            alert.show();
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item){
         if(item.getItemId()==R.id.addButton){
+            //optionSelect();
             WebView w=findViewById(R.id.article_new);
             News temp=r.where(News.class).equalTo("article_url",w.getUrl()).findFirst();
             //Log.i("Mainak",w.getUrl());Log.i("Mainak",temp.toString());
