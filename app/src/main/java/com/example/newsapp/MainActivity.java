@@ -15,6 +15,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -67,6 +68,7 @@ public class MainActivity extends AppCompatActivity{
     ActionBar actionBar;
     MenuItem headlinesDrawer;
     MenuItem savedDrawer;
+    private SharedPreferences mSharedPrefernces;
     private FrameLayout headlineFrame;
     private SwipeRefreshLayout mSwipeRefresh;
     private String location="in";
@@ -93,6 +95,8 @@ public class MainActivity extends AppCompatActivity{
         mToggle.syncState();
         no_article=findViewById(R.id.no_articles);
         mSwipeRefresh=findViewById(R.id.swipeRefresh);
+        mSharedPrefernces = getApplicationContext().getSharedPreferences("Location", 0);
+        location=mSharedPrefernces.getString("country","in");
         //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
@@ -265,6 +269,10 @@ public class MainActivity extends AppCompatActivity{
             case 7:location="ru";myMenu.findItem(R.id.location).setTitle("ru");break;
             case 8:location="us";myMenu.findItem(R.id.location).setTitle("us");break;
             case 9:location="za";myMenu.findItem(R.id.location).setTitle("za");break;}
+
+        SharedPreferences.Editor edit=mSharedPrefernces.edit();
+        edit.putString("country",location);
+        edit.commit();
         Realm r=Realm.getDefaultInstance();
         try{
             r.beginTransaction();
@@ -324,7 +332,6 @@ public class MainActivity extends AppCompatActivity{
                                             dialog.cancel();
                                         }
                                     }).show();
-
                         }
                     }
          }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -393,7 +400,7 @@ public class MainActivity extends AppCompatActivity{
 
         myMenu=menu;
         myMenu.findItem(R.id.addButton).setVisible(false);
-
+        myMenu.findItem(R.id.location).setTitle(location);
         return true;
     }
 
