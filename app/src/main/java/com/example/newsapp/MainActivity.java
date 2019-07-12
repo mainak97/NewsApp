@@ -26,6 +26,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,6 +56,7 @@ public class MainActivity extends AppCompatActivity{
     private Context mContext;
     private Menu myMenu;
     private int exitFlag=1;
+    private int selectedPosition=0;
     private ProgressBar loadingFirst;
     private TextView no_article;
     RealmResults<News> list;
@@ -67,8 +69,9 @@ public class MainActivity extends AppCompatActivity{
     MenuItem savedDrawer;
     private FrameLayout headlineFrame;
     private SwipeRefreshLayout mSwipeRefresh;
-
-    String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
+    private String location="in";
+    //String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
+    String url="https://newsapi.org/v2/top-headlines?apiKey=681bce98d4104756b73da99d430f07d0&pageSize=10&country=";
     @RequiresApi(api = M)
     @SuppressLint("ResourceAsColor")
     @Override
@@ -107,6 +110,7 @@ public class MainActivity extends AppCompatActivity{
                         FragmentTransaction ft = fm.beginTransaction();
                         ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
                         actionBar.setTitle("Headlines");
+                        myMenu.findItem(R.id.location).setVisible(true);
                         headlineFrame.setBackgroundColor(Color.WHITE);
                         ft.commit();
                         mSwipeRefresh.setEnabled(true);
@@ -118,6 +122,7 @@ public class MainActivity extends AppCompatActivity{
                     case R.id.nav_saved_list:
                         saved_list=r.where(News.class).equalTo("saved",true).findAll().sort("timestamp",Sort.DESCENDING);
                         ft=fm.beginTransaction();
+                        myMenu.findItem(R.id.location).setVisible(false);
                         ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,saved_list,fm,myMenu,actionBar,mSwipeRefresh),"SAVED").addToBackStack("SAVED");
                         ft.commit();
                         mSwipeRefresh.setEnabled(false);
@@ -155,7 +160,7 @@ public class MainActivity extends AppCompatActivity{
         Toast.makeText(mContext, "Fetching", Toast.LENGTH_SHORT).show();
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         String extraUrl="&rand="+(int)(Math.random()*10000);
-        JsonObjectRequest request=new JsonObjectRequest(Request.Method.GET, url+extraUrl,null,
+        JsonObjectRequest request=new JsonObjectRequest(Request.Method.GET, url+location+extraUrl,null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -247,6 +252,90 @@ public class MainActivity extends AppCompatActivity{
             alert.show();
     }
 
+
+    public void restartApp(){
+        switch(selectedPosition){
+            case 0:location="au";myMenu.findItem(R.id.location).setTitle("au");break;
+            case 1:location="cn";myMenu.findItem(R.id.location).setTitle("cn");break;
+            case 2:location="de";myMenu.findItem(R.id.location).setTitle("de");break;
+            case 3:location="fr";myMenu.findItem(R.id.location).setTitle("fr");break;
+            case 4:location="gb";myMenu.findItem(R.id.location).setTitle("gb");break;
+            case 5:location="in";myMenu.findItem(R.id.location).setTitle("in");break;
+            case 6:location="jp";myMenu.findItem(R.id.location).setTitle("jp");break;
+            case 7:location="ru";myMenu.findItem(R.id.location).setTitle("ru");break;
+            case 8:location="us";myMenu.findItem(R.id.location).setTitle("us");break;
+            case 9:location="za";myMenu.findItem(R.id.location).setTitle("za");break;}
+        Realm r=Realm.getDefaultInstance();
+        try{
+            r.beginTransaction();
+            r.delete(News.class);
+            r.commitTransaction();
+        }catch (Exception e){
+            r.cancelTransaction();
+            e.printStackTrace();
+        }
+        FragmentManager fm = getSupportFragmentManager();
+        int count = fm.getBackStackEntryCount();
+
+        for(int i = 0; i < count; ++i) {
+            fm.popBackStackImmediate();
+        }
+        loadingFirst.setVisibility(View.VISIBLE);
+        loadData(0);
+    }
+
+    public void showLocationChooser(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        int pos=0;
+        switch(location){
+            case "au":pos=0; break;
+            case "cn":pos=1;break;
+            case "de":pos=2;break;
+            case "fr":pos=3; break;
+            case "gb":pos=4;break;
+            case "in": pos=5;break;
+            case "jp":pos=6;break;
+            case "ru":pos=7;break;
+            case "us":pos=8;break;
+            case "za": pos=9; break;}
+        final int finalPos = pos;
+        builder.setTitle("Choose One").setSingleChoiceItems(R.array.choices, pos, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+                    }
+
+         }).setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
+                        if(selectedPosition!= finalPos){
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setTitle("Are you sure?")
+                                    .setMessage("This will erase all data")
+                                    .setPositiveButton("Ok",
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    restartApp();
+                                                }
+                                            })
+                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    }).show();
+
+                        }
+                    }
+         }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+          }).show();
+
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item){
         if(item.getItemId()==R.id.addButton){
@@ -288,6 +377,11 @@ public class MainActivity extends AppCompatActivity{
                 no_article.setVisibility(View.INVISIBLE);
                 Toast.makeText(this,"Added to saved articles",Toast.LENGTH_SHORT).show();
             }
+        }
+
+
+        if(item.getItemId()==R.id.location){
+            showLocationChooser();
         }
         if(mToggle.onOptionsItemSelected(item))
             return true;
@@ -345,6 +439,7 @@ public class MainActivity extends AppCompatActivity{
         if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
            // Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
             actionBar.setTitle("Headlines");
+            myMenu.findItem(R.id.location).setVisible(true);
             headlinesDrawer.setChecked(true);
             headlineFrame.setBackgroundColor(Color.WHITE);
             return ;
@@ -355,12 +450,15 @@ public class MainActivity extends AppCompatActivity{
             actionBar.setTitle("Saved Articles");
             headlineFrame.setBackgroundColor(Color.TRANSPARENT);
             mSwipeRefresh.setEnabled(false);
+
+            myMenu.findItem(R.id.location).setVisible(false);
             savedDrawer.setChecked(true);
         }
         else if(tag.equals("HEADLINES"))
         {
             //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
             actionBar.setTitle("Headlines");
+            myMenu.findItem(R.id.location).setVisible(true);
             headlineFrame.setBackgroundColor(Color.WHITE);
             mSwipeRefresh.setEnabled(true);
             headlinesDrawer.setChecked(true);

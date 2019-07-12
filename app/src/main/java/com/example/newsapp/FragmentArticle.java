@@ -40,9 +40,12 @@ public class FragmentArticle extends Fragment{
         spinner=view.findViewById(R.id.loadingPage);
         webview=view.findViewById(R.id.article_new);
         webview.setVisibility(webview.INVISIBLE);
+        //webview.setForceDarkAllowed(true);
+        //--webview.set
         mSwipeRefresh.setEnabled(false);
         actionBar.setTitle("News Article");
         myMenu.findItem(R.id.addButton).setVisible(true);
+        myMenu.findItem(R.id.location).setVisible(false);
         //Toast.makeText(getActivity(), "Article", Toast.LENGTH_SHORT).show();
         if(news.isSaved())
             myMenu.findItem(R.id.addButton).setIcon(R.drawable.ic_done_black_24dp);
