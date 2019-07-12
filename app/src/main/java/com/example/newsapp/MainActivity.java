@@ -512,4 +512,11 @@ public class MainActivity extends AppCompatActivity{
         r.close();
         super.onDestroy();
     }
+    
+    public void openNewsApi(View view){
+        String url = "https://newsapi.org";
+        Intent i = new Intent(Intent.ACTION_VIEW);
+        i.setData(Uri.parse(url));
+        startActivity(i);
+    }
 }
