@@ -6,4 +6,16 @@
     <string name="close">Close</string>
     <string name="open">Open</string>
     <string name="no_articles_saved_yet">No Articles Saved Yet :/</string>
+    <string-array name="choices">
+        <item>Australia [AU]</item>
+        <item>China [CN]</item>
+        <item>Germany [DE]</item>
+        <item>France [FR]</item>
+        <item>Britain [GB]</item>
+        <item>India [IN]</item>
+        <item>Japan [JP]</item>
+        <item>Russia [RU]</item>
+        <item>U.S.A. [US]</item>
+        <item>South Africa [ZA]</item>
+    </string-array>
 </resources>
