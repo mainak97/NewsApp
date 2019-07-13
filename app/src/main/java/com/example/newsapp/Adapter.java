@@ -1,14 +1,17 @@
 package com.example.newsapp;
 import android.annotation.SuppressLint;
 import androidx.appcompat.app.ActionBar;
+
 import android.content.Context;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
@@ -20,7 +23,11 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import io.realm.RealmResults;
 
@@ -53,6 +60,28 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
         holder.test.setText(news.get(position).getTitle());
 
+        //Converting the published date to user Readable date/time
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        Date date=null;
+        try {
+            date = sdf.parse(news.get(position).getPublishDate());
+        } catch (ParseException e) {
+            Log.d("DEBJOY",e.getMessage());
+        }
+        SimpleDateFormat outputFormat = new SimpleDateFormat("dd", Locale.ENGLISH);
+        outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        if(outputFormat.format(new Date()).equals(outputFormat.format(date))){
+            outputFormat = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
+            outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+            holder.publishDate.setText(outputFormat.format(date));
+        }else{
+            outputFormat = new SimpleDateFormat("dd MMM yy", Locale.ENGLISH);
+            outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+            String dateValue[]=outputFormat.format(date).split(" ",0);
+            holder.publishDate.setText(dateValue[0]+" "+dateValue[1]+"'"+dateValue[2]);
+        }
+
         holder.card_view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -77,9 +106,11 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         private TextView test;
         private ImageView news_card;
         private CardView card_view;
+        private TextView publishDate;
         public MyViewHolder(@NonNull View view) {
             super(view);
             test=view.findViewById(R.id.test);
+            publishDate=view.findViewById(R.id.dateShow);
             news_card=view.findViewById(R.id.news_card);
             card_view=view.findViewById(R.id.card);
         }

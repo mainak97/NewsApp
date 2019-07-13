@@ -15,10 +15,12 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -48,8 +50,10 @@ import java.io.File;
 import java.util.Objects;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 import io.realm.Sort;
+import io.realm.exceptions.RealmMigrationNeededException;
 
 import static android.os.Build.VERSION_CODES.M;
 
@@ -80,7 +84,15 @@ public class MainActivity extends AppCompatActivity{
     @SuppressLint("ResourceAsColor")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        r=Realm.getDefaultInstance();
+        try{
+            r = Realm.getDefaultInstance();
+        }catch (Exception e){
+            //Get a Realm instance for this thread
+            RealmConfiguration config = new RealmConfiguration.Builder()
+                    .deleteRealmIfMigrationNeeded()
+                    .build();
+            r = Realm.getInstance(config);}
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -184,17 +196,26 @@ public class MainActivity extends AppCompatActivity{
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        Realm r=Realm.getDefaultInstance();
-                        for(int i=0;i<a.length();i++){
+                        Realm r=null;
+                        try{
+                            r = Realm.getDefaultInstance();
+                        }catch (Exception e){
+                            //Get a Realm instance for this thread
+                            RealmConfiguration config = new RealmConfiguration.Builder()
+                                    .deleteRealmIfMigrationNeeded()
+                                    .build();
+                            r = Realm.getInstance(config);}
+                        for(int i=a.length()-1;i>=0;i--){
                             try {
                                 JSONObject temp = a.getJSONObject(i);
                                 r.beginTransaction();
-                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url")));
+                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url"),temp.getString("publishedAt")));
                                 r.commitTransaction();
                             }
                             catch (Exception e) {
                                 r.cancelTransaction();
                                 e.printStackTrace();
+                                //Toast.makeText(mContext, "error occured", Toast.LENGTH_SHORT).show();
                             }
                         }
                         list=r.where(News.class).findAll().sort("timestamp", Sort.DESCENDING);
@@ -235,7 +256,7 @@ public class MainActivity extends AppCompatActivity{
         return isConnected;
     }
 
-        public void exitDialog(final int a){
+    public void exitDialog(final int a){
             if(haveNetworkConnection()){
                 loadData(a);
                 return;
@@ -275,7 +296,15 @@ public class MainActivity extends AppCompatActivity{
         SharedPreferences.Editor edit=mSharedPrefernces.edit();
         edit.putString("country",location);
         edit.commit();
-        Realm r=Realm.getDefaultInstance();
+        Realm r=null;
+        try{
+            r = Realm.getDefaultInstance();
+        }catch (Exception e){
+            //Get a Realm instance for this thread
+            RealmConfiguration config = new RealmConfiguration.Builder()
+                    .deleteRealmIfMigrationNeeded()
+                    .build();
+            r = Realm.getInstance(config);}
         try{
             r.beginTransaction();
             r.delete(News.class);
@@ -481,6 +510,7 @@ public class MainActivity extends AppCompatActivity{
             actionBar.setTitle("Headlines");
             myMenu.findItem(R.id.location).setVisible(true);
             headlinesDrawer.setChecked(true);
+            mSwipeRefresh.setEnabled(true);
             headlineFrame.setBackgroundColor(Color.WHITE);
             return ;
         }
@@ -512,7 +542,7 @@ public class MainActivity extends AppCompatActivity{
         r.close();
         super.onDestroy();
     }
-    
+
     public void openNewsApi(View view){
         String url = "https://newsapi.org";
         Intent i = new Intent(Intent.ACTION_VIEW);

@@ -19,6 +19,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.util.ArrayList;
 
 import io.realm.Realm;
+import io.realm.RealmConfiguration;
 import io.realm.RealmResults;
 
 public class HeadlinesViewFragment extends Fragment {
@@ -29,7 +30,8 @@ public class HeadlinesViewFragment extends Fragment {
     private View view;
     private SwipeRefreshLayout mSwipeRefresh;
     private ActionBar actionBar;
-    private Realm r=Realm.getDefaultInstance();
+    //private Realm r=null;
+
     public HeadlinesViewFragment(Context context, RealmResults<News> news, FragmentManager fm, Menu myMenu, ActionBar actionBar,SwipeRefreshLayout mSwipeRefresh){
         mContext=context;
         this.news=news;
@@ -39,6 +41,7 @@ public class HeadlinesViewFragment extends Fragment {
         this.myMenu=myMenu;
     }
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
         view = inflater.inflate(R.layout.headlines_view_fragment,container,false);
         myMenu.findItem(R.id.addButton).setVisible(false);
         RecyclerView news_list=view.findViewById(R.id.main_list_rv);
