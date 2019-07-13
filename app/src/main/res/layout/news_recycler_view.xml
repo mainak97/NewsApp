@@ -13,37 +13,50 @@
         app:cardBackgroundColor="@android:color/white"
         app:cardElevation="2dp"
         app:cardUseCompatPadding="true"
-        android:clickable="true"
         android:foreground="?android:attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
         android:id="@+id/card">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
 
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+
             <ImageView
                 android:id="@+id/news_card"
                 android:layout_width="match_parent"
                 android:layout_height="250sp"
-                tools:layout_editor_absoluteX="1dp"
-                tools:layout_editor_absoluteY="16dp" />
+                app:layout_constraintTop_toTopOf="parent"
+                tools:layout_editor_absoluteX="8dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/dateShow"
+                android:elevation="@dimen/cardview_default_elevation"
+                android:background="@drawable/time_shpae"
+                android:text="4/5/2019"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
 
             <TextView
                 android:id="@+id/test"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
                 android:ellipsize="end"
                 android:gravity="center"
+                android:padding="10sp"
                 android:textColor="#000"
                 android:textSize="20sp"
-                android:padding="10sp"
                 app:fontFamily="@font/adamina"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/news_card" />
-        </LinearLayout>
+                app:layout_constraintTop_toBottomOf="@+id/news_card" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
 
