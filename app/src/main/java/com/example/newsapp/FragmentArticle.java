@@ -47,6 +47,7 @@ public class FragmentArticle extends Fragment{
         myMenu.findItem(R.id.addButton).setVisible(true);
         myMenu.findItem(R.id.location).setVisible(false);
         //Toast.makeText(getActivity(), "Article", Toast.LENGTH_SHORT).show();
+
         if(news.isSaved())
             myMenu.findItem(R.id.addButton).setIcon(R.drawable.ic_done_black_24dp);
         else

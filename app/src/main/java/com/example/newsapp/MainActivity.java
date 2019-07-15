@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity{
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
 
-        NavigationView navigationView=findViewById(R.id.nav_view);
+        final NavigationView navigationView=findViewById(R.id.nav_view);
         Menu menu1=navigationView.getMenu();
         headlinesDrawer=menu1.findItem(R.id.nav_headline);
         savedDrawer=menu1.findItem(R.id.nav_saved_list);
@@ -153,6 +153,36 @@ public class MainActivity extends AppCompatActivity{
                         else
                             no_article.setVisibility(View.INVISIBLE);
                         mDrawerLayout.closeDrawer(GravityCompat.START);
+                        break;
+                    case R.id.nav_clear_cache:
+                        new AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Are you sure?")
+                                .setMessage("This will erase all data")
+                                .setPositiveButton("Ok",
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                mDrawerLayout.closeDrawer(GravityCompat.START);
+                                                FragmentTransaction ft = fm.beginTransaction();
+                                                ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
+                                                actionBar.setTitle("Headlines");
+                                                myMenu.findItem(R.id.location).setVisible(true);
+                                                headlineFrame.setBackgroundColor(Color.WHITE);
+                                                ft.commit();
+                                                mSwipeRefresh.setEnabled(true);
+                                                //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
+                                                current_list=list;
+                                                no_article.setVisibility(View.INVISIBLE);
+                                                restartApp();
+                                                navigationView.setCheckedItem(R.id.nav_headline);
+                                                actionBar.setTitle("Headlines");
+                                                no_article.setVisibility(View.INVISIBLE);
+                                            }
+                                        })
+                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        dialog.cancel();
+                                    }
+                                }).show();
                         break;
                 }
                 return true;
@@ -209,7 +239,7 @@ public class MainActivity extends AppCompatActivity{
                             try {
                                 JSONObject temp = a.getJSONObject(i);
                                 r.beginTransaction();
-                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url"),temp.getString("publishedAt")));
+                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url"),temp.getString("publishedAt"),location));
                                 r.commitTransaction();
                             }
                             catch (Exception e) {
@@ -218,7 +248,7 @@ public class MainActivity extends AppCompatActivity{
                                 //Toast.makeText(mContext, "error occured", Toast.LENGTH_SHORT).show();
                             }
                         }
-                        list=r.where(News.class).findAll().sort("timestamp", Sort.DESCENDING);
+                        list=r.where(News.class).equalTo("location",location).findAll().sort("timestamp", Sort.DESCENDING);
                         FragmentTransaction ft = fm.beginTransaction();
                         Log.i("mainak",String.valueOf(list.size()));
                         if(addReplace==1)
@@ -241,6 +271,7 @@ public class MainActivity extends AppCompatActivity{
             }
         });
         requestQueue.add(request);
+        mDrawerLayout.closeDrawer(GravityCompat.START);
     }
 
     private boolean haveNetworkConnection() {
@@ -281,18 +312,11 @@ public class MainActivity extends AppCompatActivity{
 
 
     public void restartApp(){
-        switch(selectedPosition){
-            case 0:location="au";myMenu.findItem(R.id.location).setTitle("au");break;
-            case 1:location="cn";myMenu.findItem(R.id.location).setTitle("cn");break;
-            case 2:location="de";myMenu.findItem(R.id.location).setTitle("de");break;
-            case 3:location="fr";myMenu.findItem(R.id.location).setTitle("fr");break;
-            case 4:location="gb";myMenu.findItem(R.id.location).setTitle("gb");break;
-            case 5:location="in";myMenu.findItem(R.id.location).setTitle("in");break;
-            case 6:location="jp";myMenu.findItem(R.id.location).setTitle("jp");break;
-            case 7:location="ru";myMenu.findItem(R.id.location).setTitle("ru");break;
-            case 8:location="us";myMenu.findItem(R.id.location).setTitle("us");break;
-            case 9:location="za";myMenu.findItem(R.id.location).setTitle("za");break;}
-
+        FragmentManager fm = getSupportFragmentManager();
+        int count = fm.getBackStackEntryCount();
+        for(int i = 0; i < count; ++i) {
+            fm.popBackStackImmediate();
+        }
         Realm r=null;
         try{
             r = Realm.getDefaultInstance();
@@ -310,19 +334,12 @@ public class MainActivity extends AppCompatActivity{
             r.cancelTransaction();
             e.printStackTrace();
         }
-        FragmentManager fm = getSupportFragmentManager();
-        int count = fm.getBackStackEntryCount();
-
-        for(int i = 0; i < count; ++i) {
-            fm.popBackStackImmediate();
-        }
         loadingFirst.setVisibility(View.VISIBLE);
         clearApplicationData();//Clears all application data
         SharedPreferences.Editor edit=mSharedPrefernces.edit();
         edit.putString("country",location);
         edit.commit();
         loadData(0);
-
     }
 
     public void showLocationChooser(){
@@ -352,15 +369,25 @@ public class MainActivity extends AppCompatActivity{
                         selectedPosition = ((AlertDialog)dialog).getListView().getCheckedItemPosition();
                         if(selectedPosition!= finalPos){
                             new AlertDialog.Builder(MainActivity.this)
-                                    .setTitle("Are you sure?")
-                                    .setMessage("This will erase all data")
-                                    .setPositiveButton("Ok",
+                                    .setTitle("Are you sure you want to change your location?")
+                                    .setPositiveButton("Yes",
                                             new DialogInterface.OnClickListener() {
                                                 public void onClick(DialogInterface dialog, int id) {
-                                                    restartApp();
+                                                    switch(selectedPosition){
+                                                        case 0:location="au";myMenu.findItem(R.id.location).setTitle("au");break;
+                                                        case 1:location="cn";myMenu.findItem(R.id.location).setTitle("cn");break;
+                                                        case 2:location="de";myMenu.findItem(R.id.location).setTitle("de");break;
+                                                        case 3:location="fr";myMenu.findItem(R.id.location).setTitle("fr");break;
+                                                        case 4:location="gb";myMenu.findItem(R.id.location).setTitle("gb");break;
+                                                        case 5:location="in";myMenu.findItem(R.id.location).setTitle("in");break;
+                                                        case 6:location="jp";myMenu.findItem(R.id.location).setTitle("jp");break;
+                                                        case 7:location="ru";myMenu.findItem(R.id.location).setTitle("ru");break;
+                                                        case 8:location="us";myMenu.findItem(R.id.location).setTitle("us");break;
+                                                        case 9:location="za";myMenu.findItem(R.id.location).setTitle("za");break;}
+                                                    loadData(0);
                                                 }
                                             })
-                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
                                             dialog.cancel();
                                         }

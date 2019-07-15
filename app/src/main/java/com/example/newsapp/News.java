@@ -12,16 +12,27 @@ public class News extends RealmObject {
     private boolean saved;
     private String publishDate;
 
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    private String location;
+
 
     public News(){
     }
-    public News(String title,String image_url,String article_url,String publishDate){
+    public News(String title,String image_url,String article_url,String publishDate,String location){
         this.title=title;
         this.image_url=image_url;
         this.article_url=article_url;
         this.timestamp=System.currentTimeMillis();
         this.publishDate=publishDate;
         this.saved=false;
+        this.location=location;
     }
 
     public String getPublishDate() {
