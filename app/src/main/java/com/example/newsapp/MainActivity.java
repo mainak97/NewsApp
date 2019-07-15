@@ -293,9 +293,6 @@ public class MainActivity extends AppCompatActivity{
             case 8:location="us";myMenu.findItem(R.id.location).setTitle("us");break;
             case 9:location="za";myMenu.findItem(R.id.location).setTitle("za");break;}
 
-        SharedPreferences.Editor edit=mSharedPrefernces.edit();
-        edit.putString("country",location);
-        edit.commit();
         Realm r=null;
         try{
             r = Realm.getDefaultInstance();
@@ -320,8 +317,12 @@ public class MainActivity extends AppCompatActivity{
             fm.popBackStackImmediate();
         }
         loadingFirst.setVisibility(View.VISIBLE);
-         clearApplicationData();
+        clearApplicationData();//Clears all application data
+        SharedPreferences.Editor edit=mSharedPrefernces.edit();
+        edit.putString("country",location);
+        edit.commit();
         loadData(0);
+
     }
 
     public void showLocationChooser(){
