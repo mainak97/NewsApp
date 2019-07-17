@@ -494,6 +494,9 @@ public class MainActivity extends AppCompatActivity{
                                                         case 7:location="us";myMenu.findItem(R.id.location).setTitle("us");break;
                                                         case 8:location="za";myMenu.findItem(R.id.location).setTitle("za");break;}
                                                     loadingFirst.setVisibility(View.VISIBLE);
+                                                    SharedPreferences.Editor edit=mSharedPrefernces.edit();
+                                                    edit.putString("country",location);
+                                                    edit.commit();
                                                     loadData(0);
                                                 }
                                             })
