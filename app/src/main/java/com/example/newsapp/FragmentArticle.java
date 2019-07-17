@@ -12,10 +12,12 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -38,6 +40,11 @@ public class FragmentArticle extends Fragment{
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.article_view_fragment,container,false);
         spinner=view.findViewById(R.id.loadingPage);
+
+        MenuItem searchViewItem = myMenu.findItem(R.id.app_bar_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchViewItem);
+        while(!searchView.isIconified()){searchView.setIconified(true);}
+
         webview=view.findViewById(R.id.article_new);
         webview.setVisibility(webview.INVISIBLE);
         //webview.setForceDarkAllowed(true);
@@ -53,6 +60,7 @@ public class FragmentArticle extends Fragment{
         else
             myMenu.findItem(R.id.addButton).setIcon(R.drawable.add);
         webview.setWebViewClient(new CustomWebViewClient());
+        myMenu.findItem(R.id.app_bar_search).setVisible(false);
         WebSettings webSettings = webview.getSettings();
         webSettings.setJavaScriptEnabled(true);
         // Force links and redirects to open in the WebView instead of in a browser

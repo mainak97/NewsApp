@@ -7,6 +7,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
+import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -29,6 +30,7 @@ import android.view.View;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -69,11 +71,13 @@ public class MainActivity extends AppCompatActivity{
     RealmResults<News> list;
     RealmResults<News> saved_list;
     RealmResults<News> current_list;
+    RealmResults<News> searched_list;
     FragmentManager fm = getSupportFragmentManager();
     Realm r;
     ActionBar actionBar;
     MenuItem headlinesDrawer;
     MenuItem savedDrawer;
+    private SearchView searchView;
     private SharedPreferences mSharedPrefernces;
     private FrameLayout headlineFrame;
     private SwipeRefreshLayout mSwipeRefresh;
@@ -115,6 +119,7 @@ public class MainActivity extends AppCompatActivity{
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
 
+
         final NavigationView navigationView=findViewById(R.id.nav_view);
         Menu menu1=navigationView.getMenu();
         headlinesDrawer=menu1.findItem(R.id.nav_headline);
@@ -126,11 +131,22 @@ public class MainActivity extends AppCompatActivity{
                 switch (menuItem.getItemId()){
                     case R.id.nav_headline:
                         FragmentTransaction ft = fm.beginTransaction();
+                        if(current_list==searched_list)
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
+                        else
                         ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
                         actionBar.setTitle("Headlines");
+                        myMenu.findItem(R.id.app_bar_search).setVisible(true);
+
                         myMenu.findItem(R.id.location).setVisible(true);
                         headlineFrame.setBackgroundColor(Color.WHITE);
                         ft.commit();
+
+
+                        while(!searchView.isIconified()){
+                            searchView.setIconified(true);
+                        }
+
                         mSwipeRefresh.setEnabled(true);
                         //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
                         current_list=list;
@@ -141,12 +157,25 @@ public class MainActivity extends AppCompatActivity{
                         saved_list=r.where(News.class).equalTo("saved",true).findAll().sort("timestamp",Sort.DESCENDING);
                         ft=fm.beginTransaction();
                         myMenu.findItem(R.id.location).setVisible(false);
+                        myMenu.findItem(R.id.app_bar_search).setVisible(false);
+                        if(current_list==searched_list){
+                            Log.i("DEBJOY","current_list==searched_list");
+                            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
+                            ft.commit();
+                            current_list=list;
+                        }
+                        ft=fm.beginTransaction();
                         ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,saved_list,fm,myMenu,actionBar,mSwipeRefresh),"SAVED").addToBackStack("SAVED");
                         ft.commit();
                         mSwipeRefresh.setEnabled(false);
                        // Toast.makeText(mContext, "Saved Articles", Toast.LENGTH_SHORT).show();
                         headlineFrame.setBackgroundColor(Color.TRANSPARENT);
                         actionBar.setTitle("Saved Articles");
+
+                        while(!searchView.isIconified()){
+                            searchView.setIconified(true);
+                        }
+
                         current_list=saved_list;
                         if(current_list.size()==0)
                             no_article.setVisibility(View.VISIBLE);
@@ -213,7 +242,7 @@ public class MainActivity extends AppCompatActivity{
                     @Override
                     public void onResponse(JSONObject response) {
                         JSONArray a = null;
-                        loadingFirst.setVisibility(View.INVISIBLE);
+
                         Log.i("Mainak", "onResponse: "+response.toString());
                         try {
                             a=response.getJSONArray("articles");
@@ -258,10 +287,89 @@ public class MainActivity extends AppCompatActivity{
                             Toast.makeText(mContext, "News updated", Toast.LENGTH_SHORT).show();
                             mSwipeRefresh.setRefreshing(false);
                         }
-
                         ft.commit();
+                        loadingFirst.setVisibility(View.INVISIBLE);
+
 
                             current_list=list;
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e("Mainak", "onErrorResponse: "+error.getMessage());
+            }
+        });
+        requestQueue.add(request);
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+    }
+
+    public void loadData(final String toSearch){
+
+        Toast.makeText(mContext, "Fetching", Toast.LENGTH_SHORT).show();
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String URL="https://newsapi.org/v2/everything?apiKey=681bce98d4104756b73da99d430f07d0&pageSize=10&q="+toSearch;
+        JsonObjectRequest request=new JsonObjectRequest(Request.Method.GET, URL,null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        JSONArray a = null;
+                        try {
+                            a=response.getJSONArray("articles");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            Log.i("Mainak",a.getJSONObject(0).getString("title"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        Realm r=null;
+                        try{
+                            r = Realm.getDefaultInstance();
+                        }catch (Exception e){
+                            RealmConfiguration config = new RealmConfiguration.Builder()
+                                    .deleteRealmIfMigrationNeeded()
+                                    .build();
+                            r = Realm.getInstance(config);}
+                        /*RealmResults<News> result=r.where(News.class).equalTo("location","SER").notEqualTo("saved",true).findAll();
+                        try{
+                            result.deleteAllFromRealm();
+                        }catch(Exception e){
+                            Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }*/
+                        try{
+                            r.beginTransaction();
+                            r.where(News.class).equalTo("location","SER").notEqualTo("saved",true).findAll().deleteAllFromRealm();
+                            r.commitTransaction();
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            r.cancelTransaction();
+                        }
+
+
+                        for(int i=a.length()-1;i>=0;i--){
+                            try {
+                                JSONObject temp = a.getJSONObject(i);
+                                r.beginTransaction();
+                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url"),temp.getString("publishedAt"),"SER"));
+                                r.commitTransaction();
+                            }
+                            catch (Exception e) {
+                                r.cancelTransaction();
+                                e.printStackTrace();
+                                //Toast.makeText(mContext, "error occured", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        searched_list=r.where(News.class).equalTo("location","SER").findAll().sort("timestamp", Sort.DESCENDING);
+                        FragmentTransaction ft = fm.beginTransaction();
+                        Log.i("mainak",String.valueOf(list.size()));
+
+                            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,searched_list,fm,myMenu,actionBar,mSwipeRefresh),"SEARCH");
+                            Toast.makeText(mContext, "Loaded", Toast.LENGTH_SHORT).show();
+                        ft.commit();
+                        loadingFirst.setVisibility(View.INVISIBLE);
+                        current_list=searched_list;
 
                     }
                 }, new Response.ErrorListener() {
@@ -347,15 +455,14 @@ public class MainActivity extends AppCompatActivity{
         int pos=0;
         switch(location){
             case "au":pos=0; break;
-            case "cn":pos=1;break;
-            case "de":pos=2;break;
-            case "fr":pos=3; break;
-            case "gb":pos=4;break;
-            case "in": pos=5;break;
-            case "jp":pos=6;break;
-            case "ru":pos=7;break;
-            case "us":pos=8;break;
-            case "za": pos=9; break;}
+            case "de":pos=1;break;
+            case "fr":pos=2; break;
+            case "gb":pos=3;break;
+            case "in": pos=4;break;
+            case "jp":pos=5;break;
+            case "ru":pos=6;break;
+            case "us":pos=7;break;
+            case "za": pos=8; break;}
         final int finalPos = pos;
         builder.setTitle("Choose One").setSingleChoiceItems(R.array.choices, pos, new DialogInterface.OnClickListener() {
                     @Override
@@ -375,15 +482,15 @@ public class MainActivity extends AppCompatActivity{
                                                 public void onClick(DialogInterface dialog, int id) {
                                                     switch(selectedPosition){
                                                         case 0:location="au";myMenu.findItem(R.id.location).setTitle("au");break;
-                                                        case 1:location="cn";myMenu.findItem(R.id.location).setTitle("cn");break;
-                                                        case 2:location="de";myMenu.findItem(R.id.location).setTitle("de");break;
-                                                        case 3:location="fr";myMenu.findItem(R.id.location).setTitle("fr");break;
-                                                        case 4:location="gb";myMenu.findItem(R.id.location).setTitle("gb");break;
-                                                        case 5:location="in";myMenu.findItem(R.id.location).setTitle("in");break;
-                                                        case 6:location="jp";myMenu.findItem(R.id.location).setTitle("jp");break;
-                                                        case 7:location="ru";myMenu.findItem(R.id.location).setTitle("ru");break;
-                                                        case 8:location="us";myMenu.findItem(R.id.location).setTitle("us");break;
-                                                        case 9:location="za";myMenu.findItem(R.id.location).setTitle("za");break;}
+                                                        case 1:location="de";myMenu.findItem(R.id.location).setTitle("de");break;
+                                                        case 2:location="fr";myMenu.findItem(R.id.location).setTitle("fr");break;
+                                                        case 3:location="gb";myMenu.findItem(R.id.location).setTitle("gb");break;
+                                                        case 4:location="in";myMenu.findItem(R.id.location).setTitle("in");break;
+                                                        case 5:location="jp";myMenu.findItem(R.id.location).setTitle("jp");break;
+                                                        case 6:location="ru";myMenu.findItem(R.id.location).setTitle("ru");break;
+                                                        case 7:location="us";myMenu.findItem(R.id.location).setTitle("us");break;
+                                                        case 8:location="za";myMenu.findItem(R.id.location).setTitle("za");break;}
+                                                    loadingFirst.setVisibility(View.VISIBLE);
                                                     loadData(0);
                                                 }
                                             })
@@ -435,6 +542,9 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item){
+
+
+
         if(item.getItemId()==R.id.addButton){
             //optionSelect();
             WebView w=findViewById(R.id.article_new);
@@ -491,11 +601,66 @@ public class MainActivity extends AppCompatActivity{
         myMenu=menu;
         myMenu.findItem(R.id.addButton).setVisible(false);
         myMenu.findItem(R.id.location).setTitle(location);
+
+        MenuItem searchViewItem = menu.findItem(R.id.app_bar_search);
+        searchView = (SearchView) MenuItemCompat.getActionView(searchViewItem);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Toast.makeText(mContext, query, Toast.LENGTH_SHORT).show();
+                loadData(query);
+                searchView.clearFocus();
+             /*   if(list.contains(query)){
+                    adapter.getFilter().filter(query);
+                }else{
+                    Toast.makeText(MainActivity.this, "No Match found",Toast.LENGTH_LONG).show();
+                }*/
+                return false;
+
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+
+        });
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+//                FragmentTransaction ft = fm.beginTransaction();
+//                ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
+//                ft.commit();
+                return false;
+            }
+        });
         return true;
     }
 
     @Override
     public void onBackPressed(){
+        if(!searchView.isIconified() && current_list!=list || current_list==searched_list){
+            searchView.setIconified(true);
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
+            actionBar.setTitle("Headlines");
+            myMenu.findItem(R.id.app_bar_search).setVisible(true);
+            myMenu.findItem(R.id.location).setVisible(true);
+            headlineFrame.setBackgroundColor(Color.WHITE);
+            ft.commit();
+            mSwipeRefresh.setEnabled(true);
+            //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
+            current_list=list;
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+            no_article.setVisibility(View.INVISIBLE);
+            return;
+        }else if(!searchView.isIconified()){
+            searchView.setIconified(true);
+            myMenu.findItem(R.id.app_bar_search).setVisible(true);
+            return;
+        }
+
         if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
             return;
@@ -535,10 +700,16 @@ public class MainActivity extends AppCompatActivity{
         super.onBackPressed();
         if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
            // Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
+            ft.commit();
+
+            fm.popBackStackImmediate();
             actionBar.setTitle("Headlines");
             myMenu.findItem(R.id.location).setVisible(true);
             headlinesDrawer.setChecked(true);
             mSwipeRefresh.setEnabled(true);
+            myMenu.findItem(R.id.app_bar_search).setVisible(true);
             headlineFrame.setBackgroundColor(Color.WHITE);
             return ;
         }
@@ -548,13 +719,14 @@ public class MainActivity extends AppCompatActivity{
             actionBar.setTitle("Saved Articles");
             headlineFrame.setBackgroundColor(Color.TRANSPARENT);
             mSwipeRefresh.setEnabled(false);
-
+            myMenu.findItem(R.id.app_bar_search).setVisible(false);
             myMenu.findItem(R.id.location).setVisible(false);
             savedDrawer.setChecked(true);
         }
         else if(tag.equals("HEADLINES"))
         {
             //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
+            myMenu.findItem(R.id.app_bar_search).setVisible(true);
             actionBar.setTitle("Headlines");
             myMenu.findItem(R.id.location).setVisible(true);
             headlineFrame.setBackgroundColor(Color.WHITE);
