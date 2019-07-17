@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity{
     private FrameLayout headlineFrame;
     private SwipeRefreshLayout mSwipeRefresh;
     private String location="in";
+    private NavigationView navigationView;
     //String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
     String url="https://newsapi.org/v2/top-headlines?apiKey=681bce98d4104756b73da99d430f07d0&pageSize=10&country=";
     @RequiresApi(api = M)
@@ -120,10 +121,11 @@ public class MainActivity extends AppCompatActivity{
 
 
 
-        final NavigationView navigationView=findViewById(R.id.nav_view);
+        navigationView=findViewById(R.id.nav_view);
         Menu menu1=navigationView.getMenu();
         headlinesDrawer=menu1.findItem(R.id.nav_headline);
         savedDrawer=menu1.findItem(R.id.nav_saved_list);
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
@@ -230,6 +232,10 @@ public class MainActivity extends AppCompatActivity{
     }
 
     public void loadData(final int addReplace){
+
+        navigationView.getMenu().findItem(R.id.nav_headline).setEnabled(false);
+        navigationView.getMenu().findItem(R.id.nav_saved_list).setEnabled(false);
+        navigationView.getMenu().findItem(R.id.nav_clear_cache).setEnabled(false);
         if(!haveNetworkConnection()){
             exitDialog(addReplace);
             return;
@@ -289,7 +295,9 @@ public class MainActivity extends AppCompatActivity{
                         }
                         ft.commit();
                         loadingFirst.setVisibility(View.INVISIBLE);
-
+                        navigationView.getMenu().findItem(R.id.nav_headline).setEnabled(true);
+                        navigationView.getMenu().findItem(R.id.nav_saved_list).setEnabled(true);
+                        navigationView.getMenu().findItem(R.id.nav_clear_cache).setEnabled(true);
 
                             current_list=list;
 
@@ -332,12 +340,7 @@ public class MainActivity extends AppCompatActivity{
                                     .deleteRealmIfMigrationNeeded()
                                     .build();
                             r = Realm.getInstance(config);}
-                        /*RealmResults<News> result=r.where(News.class).equalTo("location","SER").notEqualTo("saved",true).findAll();
-                        try{
-                            result.deleteAllFromRealm();
-                        }catch(Exception e){
-                            Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_SHORT).show();
-                        }*/
+
                         try{
                             r.beginTransaction();
                             r.where(News.class).equalTo("location","SER").notEqualTo("saved",true).findAll().deleteAllFromRealm();
@@ -346,7 +349,7 @@ public class MainActivity extends AppCompatActivity{
                             e.printStackTrace();
                             r.cancelTransaction();
                         }
-
+                        Toast.makeText(mContext, a.length()+" results", Toast.LENGTH_SHORT).show();
 
                         for(int i=a.length()-1;i>=0;i--){
                             try {
@@ -366,7 +369,7 @@ public class MainActivity extends AppCompatActivity{
                         Log.i("mainak",String.valueOf(list.size()));
 
                             ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,searched_list,fm,myMenu,actionBar,mSwipeRefresh),"SEARCH");
-                            Toast.makeText(mContext, "Loaded", Toast.LENGTH_SHORT).show();
+
                         ft.commit();
                         loadingFirst.setVisibility(View.INVISIBLE);
                         current_list=searched_list;
