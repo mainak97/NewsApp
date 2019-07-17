@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NewsApp</string>
+    <string name="app_name">News</string>
     <string name="news_app">News App</string>
     <string name="headlines">Headlines</string>
     <string name="saved_articles">Saved articles</string>
@@ -8,7 +8,6 @@
     <string name="no_articles_saved_yet">No Articles Saved Yet :/</string>
     <string-array name="choices">
         <item>Australia [AU]</item>
-        <item>China [CN]</item>
         <item>Germany [DE]</item>
         <item>France [FR]</item>
         <item>Britain [GB]</item>
