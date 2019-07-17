@@ -611,6 +611,21 @@ public class MainActivity extends AppCompatActivity{
         MenuItem searchViewItem = menu.findItem(R.id.app_bar_search);
         searchView = (SearchView) MenuItemCompat.getActionView(searchViewItem);
 
+
+        searchView.setQueryHint("Search Topic");
+
+        int searchPlateId = searchView.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
+        View searchPlate = searchView.findViewById(searchPlateId);
+        if (searchPlate!=null) {
+            searchPlate.setBackgroundColor(Color.parseColor("#263238"));
+
+            int searchTextId = searchPlate.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+            TextView searchText = (TextView) searchPlate.findViewById(searchTextId);
+            if (searchText!=null) {
+                searchText.setTextColor(Color.WHITE);
+                searchText.setHintTextColor(Color.parseColor("#838f96"));
+            }
+        }
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
