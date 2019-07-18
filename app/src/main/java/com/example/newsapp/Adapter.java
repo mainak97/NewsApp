@@ -86,7 +86,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
             @Override
             public void onClick(View view) {
                 FragmentTransaction ft = fm.beginTransaction();
-                ft.replace(R.id.headlines_list,new FragmentArticle(news.get(position),myMenu,actionBar,mSwipeRefresh)).addToBackStack("tag");
+                ft.replace(R.id.headlines_list,new FragmentArticle(news.get(position),myMenu,actionBar,mSwipeRefresh)).addToBackStack("ARTICLE");
                 ft.commit();
             }
         });

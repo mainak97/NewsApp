@@ -6,6 +6,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -14,6 +15,8 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -22,10 +25,13 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.FrameLayout;
@@ -65,6 +71,7 @@ public class MainActivity extends AppCompatActivity{
     private Context mContext;
     private Menu myMenu;
     private int exitFlag=1;
+    private int headFlag=1;
     private int selectedPosition=0;
     private ProgressBar loadingFirst;
     private TextView no_article;
@@ -86,7 +93,7 @@ public class MainActivity extends AppCompatActivity{
     //String url="https://newsapi.org/v2/top-headlines?sources=google-news&apiKey=bdf9851146d24ea497cf4397288f4cde";
     String url="https://newsapi.org/v2/top-headlines?apiKey=681bce98d4104756b73da99d430f07d0&pageSize=10&country=";
     @RequiresApi(api = M)
-    @SuppressLint("ResourceAsColor")
+    @SuppressLint({"ResourceAsColor", "ResourceType"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         try{
@@ -97,15 +104,12 @@ public class MainActivity extends AppCompatActivity{
                     .deleteRealmIfMigrationNeeded()
                     .build();
             r = Realm.getInstance(config);}
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         actionBar=getSupportActionBar();
         actionBar.setTitle("Headlines");
         headlineFrame=findViewById(R.id.headlines_list);
         headlineFrame.setBackgroundColor(Color.WHITE);
-
         loadingFirst=findViewById(R.id.loadingFirst);
         mContext=this;
         mDrawerLayout= findViewById(R.id.drawer);
@@ -118,18 +122,13 @@ public class MainActivity extends AppCompatActivity{
         location=mSharedPrefernces.getString("country","in");
         //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
         Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-
-
-
         navigationView=findViewById(R.id.nav_view);
         Menu menu1=navigationView.getMenu();
         headlinesDrawer=menu1.findItem(R.id.nav_headline);
         savedDrawer=menu1.findItem(R.id.nav_saved_list);
-
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
-                Log.i("Mainak", String.valueOf(menuItem.getItemId()));
                 switch (menuItem.getItemId()){
                     case R.id.nav_headline:
                         FragmentTransaction ft = fm.beginTransaction();
@@ -139,12 +138,9 @@ public class MainActivity extends AppCompatActivity{
                         ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
                         actionBar.setTitle("Headlines");
                         myMenu.findItem(R.id.app_bar_search).setVisible(true);
-
                         myMenu.findItem(R.id.location).setVisible(true);
                         headlineFrame.setBackgroundColor(Color.WHITE);
                         ft.commit();
-
-
                         while(!searchView.isIconified()){
                             searchView.setIconified(true);
                         }
@@ -154,6 +150,7 @@ public class MainActivity extends AppCompatActivity{
                         current_list=list;
                         mDrawerLayout.closeDrawer(GravityCompat.START);
                         no_article.setVisibility(View.INVISIBLE);
+                        exitFlag=1;
                         break;
                     case R.id.nav_saved_list:
                         saved_list=r.where(News.class).equalTo("saved",true).findAll().sort("timestamp",Sort.DESCENDING);
@@ -184,6 +181,7 @@ public class MainActivity extends AppCompatActivity{
                         else
                             no_article.setVisibility(View.INVISIBLE);
                         mDrawerLayout.closeDrawer(GravityCompat.START);
+                        exitFlag=1;
                         break;
                     case R.id.nav_clear_cache:
                         new AlertDialog.Builder(MainActivity.this)
@@ -214,6 +212,7 @@ public class MainActivity extends AppCompatActivity{
                                         dialog.cancel();
                                     }
                                 }).show();
+                        exitFlag=1;
                         break;
                 }
                 return true;
@@ -310,6 +309,7 @@ public class MainActivity extends AppCompatActivity{
         });
         requestQueue.add(request);
         mDrawerLayout.closeDrawer(GravityCompat.START);
+        exitFlag=1;
     }
 
     public void loadData(final String toSearch){
@@ -451,6 +451,7 @@ public class MainActivity extends AppCompatActivity{
         edit.putString("country",location);
         edit.commit();
         loadData(0);
+        exitFlag=1;
     }
 
     public void showLocationChooser(){
@@ -513,7 +514,7 @@ public class MainActivity extends AppCompatActivity{
 
                     }
           }).show();
-
+        exitFlag=1;
     }
 
     //DELETE CACHE
@@ -546,18 +547,20 @@ public class MainActivity extends AppCompatActivity{
         return dir.delete();
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item){
 
 
-
+        exitFlag=1;
         if(item.getItemId()==R.id.addButton){
             //optionSelect();
             WebView w=findViewById(R.id.article_new);
             News temp=r.where(News.class).equalTo("article_url",w.getUrl()).findFirst();
             //Log.i("Mainak",w.getUrl());Log.i("Mainak",temp.toString());
             if(temp==null){
-                Toast.makeText(this,"Cannot Save Youtube Video",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"Cannot Save :/",Toast.LENGTH_SHORT).show();
                 return true;
             }
             if(temp.isSaved()) {
@@ -588,6 +591,7 @@ public class MainActivity extends AppCompatActivity{
                 r.where(News.class).equalTo("article_url", w.getUrl()).findFirst().setSaved(true);
                 r.commitTransaction();
                 no_article.setVisibility(View.INVISIBLE);
+                mSharedPrefernces=getApplicationContext().getSharedPreferences("Location",0);
                 Toast.makeText(this,"Added to saved articles",Toast.LENGTH_SHORT).show();
             }
         }
@@ -613,7 +617,16 @@ public class MainActivity extends AppCompatActivity{
 
 
         searchView.setQueryHint("Search Topic");
+        searchView.setOnClickListener(new SearchView.OnClickListener(){
 
+            @Override
+            public void onClick(View view) {
+                exitFlag=1;
+                if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    mDrawerLayout.closeDrawer(GravityCompat.START);
+                }
+            }
+        });
         int searchPlateId = searchView.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
         View searchPlate = searchView.findViewById(searchPlateId);
         if (searchPlate!=null) {
@@ -661,10 +674,28 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     public void onBackPressed(){
+        if(mDrawerLayout.isDrawerOpen(GravityCompat.START)){
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+            return;
+        }
         if(!searchView.isIconified() && current_list!=list || current_list==searched_list){
             searchView.setIconified(true);
+            actionBar.setTitle("Headlines");
+            myMenu.findItem(R.id.app_bar_search).setVisible(true);
+            myMenu.findItem(R.id.location).setVisible(true);
+            headlineFrame.setBackgroundColor(Color.WHITE);
+            mSwipeRefresh.setEnabled(true);
+            //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
+            current_list=list;
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+            no_article.setVisibility(View.INVISIBLE);
+            headFlag=0;
+            if(getSupportFragmentManager().getBackStackEntryCount()!=0)
+                super.onBackPressed();
+            return;
+            /*searchView.setIconified(true);
             FragmentTransaction ft = fm.beginTransaction();
-            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
+            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,current_list,fm,myMenu,actionBar,mSwipeRefresh),"SEARCHED");
             actionBar.setTitle("Headlines");
             myMenu.findItem(R.id.app_bar_search).setVisible(true);
             myMenu.findItem(R.id.location).setVisible(true);
@@ -675,29 +706,72 @@ public class MainActivity extends AppCompatActivity{
             current_list=list;
             mDrawerLayout.closeDrawer(GravityCompat.START);
             no_article.setVisibility(View.INVISIBLE);
-            return;
+            return;*/
         }else if(!searchView.isIconified()){
             searchView.setIconified(true);
             myMenu.findItem(R.id.app_bar_search).setVisible(true);
             return;
         }
-
-        if(mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
+        if(headFlag==0){
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,current_list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
+            ft.commit();
+            headFlag=1;
             return;
         }
-        if(!myMenu.findItem(R.id.addButton).isVisible()){
+        /*if(!myMenu.findItem(R.id.addButton).isVisible()){
             if(current_list==list){
                 current_list=saved_list;
             }
             else{
                 current_list=list;
             }
+        }*/
+        if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==0){
+            finish();
+            super.onBackPressed();
         }
-
-
-        Log.i("Mainak",String.valueOf(getSupportFragmentManager().getBackStackEntryCount()));
-
+        else if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==1){
+            Toast.makeText(mContext, "Press back again to exit", Toast.LENGTH_SHORT).show();
+            exitFlag=0;
+            return;
+        }else if(getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount()-1).getName()
+                .equals("ARTICLE")){
+            exitFlag=1;
+            super.onBackPressed();
+            if(getSupportFragmentManager().getBackStackEntryCount()==0){
+                actionBar.setTitle("Headlines");
+                myMenu.findItem(R.id.app_bar_search).setVisible(true);
+                myMenu.findItem(R.id.location).setVisible(true);
+                headlineFrame.setBackgroundColor(Color.WHITE);
+                mSwipeRefresh.setEnabled(true);
+                current_list=list;
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+                no_article.setVisibility(View.INVISIBLE);
+            }
+            else if(getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount()-1).getName().equals("SAVED")){
+                actionBar.setTitle("Saved Articles");
+            }
+            else {
+                actionBar.setTitle("Headlines");
+                myMenu.findItem(R.id.app_bar_search).setVisible(true);
+                myMenu.findItem(R.id.location).setVisible(true);
+                headlineFrame.setBackgroundColor(Color.WHITE);
+                mSwipeRefresh.setEnabled(true);
+                current_list=list;
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+                no_article.setVisibility(View.INVISIBLE);
+            }
+        }
+        else if(exitFlag==1){
+            Toast.makeText(mContext,"Press back again to exit", Toast.LENGTH_SHORT).show();
+            exitFlag=0;
+            return;
+        }
+        else {
+            finish();
+        }
+        /*
         if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==0)
             super.onBackPressed();
         else if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==1){
@@ -753,7 +827,7 @@ public class MainActivity extends AppCompatActivity{
             headlineFrame.setBackgroundColor(Color.WHITE);
             mSwipeRefresh.setEnabled(true);
             headlinesDrawer.setChecked(true);
-        }
+        }*/
 
     }
 
