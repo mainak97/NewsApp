@@ -129,6 +129,7 @@ public class MainActivity extends AppCompatActivity{
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
+                Log.i("Mainak", String.valueOf(menuItem.getItemId()));
                 switch (menuItem.getItemId()){
                     case R.id.nav_headline:
                         FragmentTransaction ft = fm.beginTransaction();
@@ -675,160 +676,133 @@ public class MainActivity extends AppCompatActivity{
     @Override
     public void onBackPressed(){
         if(mDrawerLayout.isDrawerOpen(GravityCompat.START)){
+            exitFlag=1;
             mDrawerLayout.closeDrawer(GravityCompat.START);
             return;
         }
-        if(!searchView.isIconified() && current_list!=list || current_list==searched_list){
+        if(!searchView.isIconified() && current_list!=list) {
+            exitFlag=1;
             searchView.setIconified(true);
             actionBar.setTitle("Headlines");
             myMenu.findItem(R.id.app_bar_search).setVisible(true);
             myMenu.findItem(R.id.location).setVisible(true);
             headlineFrame.setBackgroundColor(Color.WHITE);
             mSwipeRefresh.setEnabled(true);
-            //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
-            current_list=list;
             mDrawerLayout.closeDrawer(GravityCompat.START);
             no_article.setVisibility(View.INVISIBLE);
-            headFlag=0;
-            if(getSupportFragmentManager().getBackStackEntryCount()!=0)
-                super.onBackPressed();
             return;
-            /*searchView.setIconified(true);
-            FragmentTransaction ft = fm.beginTransaction();
-            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,current_list,fm,myMenu,actionBar,mSwipeRefresh),"SEARCHED");
-            actionBar.setTitle("Headlines");
-            myMenu.findItem(R.id.app_bar_search).setVisible(true);
-            myMenu.findItem(R.id.location).setVisible(true);
-            headlineFrame.setBackgroundColor(Color.WHITE);
-            ft.commit();
-            mSwipeRefresh.setEnabled(true);
-            //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
-            current_list=list;
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-            no_article.setVisibility(View.INVISIBLE);
-            return;*/
         }else if(!searchView.isIconified()){
+            exitFlag=1;
             searchView.setIconified(true);
             myMenu.findItem(R.id.app_bar_search).setVisible(true);
             return;
         }
-        if(headFlag==0){
+        if(current_list==searched_list){
+            exitFlag=1;
+            if(getSupportFragmentManager().getBackStackEntryCount()==0) {
+                current_list = list;
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.replace(R.id.headlines_list, new HeadlinesViewFragment(mContext, current_list, fm, myMenu, actionBar, mSwipeRefresh), "HEADLINES");
+                //fm.popBackStackImmediate();
+                FragmentManager f1 = getSupportFragmentManager();
+                for(int i = 0; i < f1.getBackStackEntryCount(); ++i) {
+                    f1.popBackStack();
+                }
+                actionBar.setTitle("Headlines");
+                myMenu.findItem(R.id.location).setVisible(true);
+                headlinesDrawer.setChecked(true);
+                mSwipeRefresh.setEnabled(true);
+                myMenu.findItem(R.id.app_bar_search).setVisible(true);
+                headlineFrame.setBackgroundColor(Color.WHITE);
+                ft.commit();
+                return;
+            }
             FragmentTransaction ft = fm.beginTransaction();
-            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,current_list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
+            FragmentManager f1 = getSupportFragmentManager();
+            for(int i = 0; i < f1.getBackStackEntryCount(); ++i) {
+                f1.popBackStack();
+            }
+            ft.replace(R.id.headlines_list, new HeadlinesViewFragment(mContext, current_list, fm, myMenu, actionBar, mSwipeRefresh), "HEADLINES");
+            //fm.popBackStackImmediate();
+            actionBar.setTitle("Headlines");
+            myMenu.findItem(R.id.location).setVisible(true);
+            headlinesDrawer.setChecked(true);
+            mSwipeRefresh.setEnabled(true);
+            myMenu.findItem(R.id.app_bar_search).setVisible(true);
+            headlineFrame.setBackgroundColor(Color.WHITE);
             ft.commit();
-            headFlag=1;
             return;
         }
-        /*if(!myMenu.findItem(R.id.addButton).isVisible()){
-            if(current_list==list){
-                current_list=saved_list;
+        if(getSupportFragmentManager().getBackStackEntryCount()==0){
+            if(exitFlag==1){
+                Toast.makeText(mContext, "Press back again to exit", Toast.LENGTH_SHORT).show();
+                exitFlag=0;
+                return;
+            }
+            finish();
+            return;
+        }
+        if(getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount()-1).getName().equals("ARTICLE")){
+            exitFlag=1;
+            if (current_list==searched_list) {
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.replace(R.id.headlines_list, new HeadlinesViewFragment(mContext, current_list, fm, myMenu, actionBar, mSwipeRefresh), "HEADLINES");
+                //fm.popBackStackImmediate();
+                FragmentManager f1 = getSupportFragmentManager();
+                for(int i = 0; i < f1.getBackStackEntryCount(); ++i) {
+                    f1.popBackStack();
+                }
+                actionBar.setTitle("Headlines");
+                myMenu.findItem(R.id.location).setVisible(true);
+                headlinesDrawer.setChecked(true);
+                mSwipeRefresh.setEnabled(true);
+                myMenu.findItem(R.id.app_bar_search).setVisible(true);
+                headlineFrame.setBackgroundColor(Color.WHITE);
+                ft.commit();
+                return;
+            }
+            if(current_list==list) {
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.replace(R.id.headlines_list, new HeadlinesViewFragment(mContext, current_list, fm, myMenu, actionBar, mSwipeRefresh), "HEADLINES");
+                //fm.popBackStackImmediate();
+                FragmentManager f1 = getSupportFragmentManager();
+                for(int i = 0; i < f1.getBackStackEntryCount(); ++i) {
+                    f1.popBackStack();
+                }
+                ft.commit();
+                actionBar.setTitle("Headlines");
+                myMenu.findItem(R.id.location).setVisible(true);
+                headlinesDrawer.setChecked(true);
+                mSwipeRefresh.setEnabled(true);
+                myMenu.findItem(R.id.app_bar_search).setVisible(true);
+                headlineFrame.setBackgroundColor(Color.WHITE);
+                navigationView.getMenu().findItem(R.id.nav_headline).setChecked(true);
+                return;
             }
             else{
-                current_list=list;
-            }
-        }*/
-        if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==0){
-            finish();
-            super.onBackPressed();
-        }
-        else if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==1){
-            Toast.makeText(mContext, "Press back again to exit", Toast.LENGTH_SHORT).show();
-            exitFlag=0;
-            return;
-        }else if(getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount()-1).getName()
-                .equals("ARTICLE")){
-            exitFlag=1;
-            super.onBackPressed();
-            if(getSupportFragmentManager().getBackStackEntryCount()==0){
-                actionBar.setTitle("Headlines");
-                myMenu.findItem(R.id.app_bar_search).setVisible(true);
-                myMenu.findItem(R.id.location).setVisible(true);
-                headlineFrame.setBackgroundColor(Color.WHITE);
-                mSwipeRefresh.setEnabled(true);
-                current_list=list;
-                mDrawerLayout.closeDrawer(GravityCompat.START);
-                no_article.setVisibility(View.INVISIBLE);
-            }
-            else if(getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount()-1).getName().equals("SAVED")){
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.replace(R.id.headlines_list, new HeadlinesViewFragment(mContext, current_list, fm, myMenu, actionBar, mSwipeRefresh), "SAVED");
+                //fm.popBackStackImmediate();
+                FragmentManager f1 = getSupportFragmentManager();
+                for(int i = 0; i < f1.getBackStackEntryCount(); ++i) {
+                    f1.popBackStack();
+                }
+                ft.commit();
                 actionBar.setTitle("Saved Articles");
-            }
-            else {
-                actionBar.setTitle("Headlines");
-                myMenu.findItem(R.id.app_bar_search).setVisible(true);
-                myMenu.findItem(R.id.location).setVisible(true);
+                headlinesDrawer.setChecked(true);
                 headlineFrame.setBackgroundColor(Color.WHITE);
-                mSwipeRefresh.setEnabled(true);
-                current_list=list;
-                mDrawerLayout.closeDrawer(GravityCompat.START);
-                no_article.setVisibility(View.INVISIBLE);
+                navigationView.getMenu().findItem(R.id.nav_saved_list).setChecked(true);
+                return;
             }
         }
-        else if(exitFlag==1){
-            Toast.makeText(mContext,"Press back again to exit", Toast.LENGTH_SHORT).show();
-            exitFlag=0;
-            return;
-        }
-        else {
+        else{
+            if(exitFlag==1){
+                Toast.makeText(mContext, "Press back again to exit", Toast.LENGTH_SHORT).show();
+                exitFlag=0;
+                return;
+            }
             finish();
         }
-        /*
-        if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==0)
-            super.onBackPressed();
-        else if(getSupportFragmentManager().getBackStackEntryCount()==0 && exitFlag==1){
-            Toast.makeText(mContext, "Press back again to exit", Toast.LENGTH_SHORT).show();
-            exitFlag=0;
-            return;
-        }else{
-            exitFlag=1;
-        }
-
-
-        if(current_list!=null && current_list.size()==0)
-            findViewById(R.id.no_articles).setVisibility(View.VISIBLE);
-        else
-            findViewById(R.id.no_articles).setVisibility(View.INVISIBLE);
-
-
-        myMenu.findItem(R.id.addButton).setVisible(false);
-
-
-        super.onBackPressed();
-        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-           // Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
-            FragmentTransaction ft = fm.beginTransaction();
-            ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
-            ft.commit();
-
-            fm.popBackStackImmediate();
-            actionBar.setTitle("Headlines");
-            myMenu.findItem(R.id.location).setVisible(true);
-            headlinesDrawer.setChecked(true);
-            mSwipeRefresh.setEnabled(true);
-            myMenu.findItem(R.id.app_bar_search).setVisible(true);
-            headlineFrame.setBackgroundColor(Color.WHITE);
-            return ;
-        }
-        String tag = getSupportFragmentManager().getBackStackEntryAt(getSupportFragmentManager().getBackStackEntryCount()-1 ).getName();
-        if(tag.equals("SAVED")){
-            //Toast.makeText(mContext, "Saved Articles", Toast.LENGTH_SHORT).show();
-            actionBar.setTitle("Saved Articles");
-            headlineFrame.setBackgroundColor(Color.TRANSPARENT);
-            mSwipeRefresh.setEnabled(false);
-            myMenu.findItem(R.id.app_bar_search).setVisible(false);
-            myMenu.findItem(R.id.location).setVisible(false);
-            savedDrawer.setChecked(true);
-        }
-        else if(tag.equals("HEADLINES"))
-        {
-            //Toast.makeText(mContext, "Headlines", Toast.LENGTH_SHORT).show();
-            myMenu.findItem(R.id.app_bar_search).setVisible(true);
-            actionBar.setTitle("Headlines");
-            myMenu.findItem(R.id.location).setVisible(true);
-            headlineFrame.setBackgroundColor(Color.WHITE);
-            mSwipeRefresh.setEnabled(true);
-            headlinesDrawer.setChecked(true);
-        }*/
-
     }
 
 
