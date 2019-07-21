@@ -43,6 +43,7 @@ public class HeadlinesViewFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         view = inflater.inflate(R.layout.headlines_view_fragment,container,false);
+        if(myMenu!=null)
         myMenu.findItem(R.id.addButton).setVisible(false);
         RecyclerView news_list=view.findViewById(R.id.main_list_rv);
         final Adapter ad=new Adapter(mContext,news,fm,myMenu,actionBar,mSwipeRefresh);
