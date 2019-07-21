@@ -83,10 +83,13 @@ public class FragmentArticle extends Fragment{
     }
 
     private class CustomWebViewClient extends WebViewClient{
+
+
         @Override
         public void onPageStarted(WebView webview, String url, Bitmap favicon){
             if(showHideInitialUse.equals("show")){
                 webview.setVisibility(webview.VISIBLE);
+                spinner.setVisibility(View.GONE);
             }
         }
 
