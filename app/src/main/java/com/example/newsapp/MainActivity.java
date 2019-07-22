@@ -133,10 +133,10 @@ public class MainActivity extends AppCompatActivity{
                 switch (menuItem.getItemId()){
                     case R.id.nav_headline:
                         FragmentTransaction ft = fm.beginTransaction();
-                        if(current_list==searched_list)
+                        /*if(current_list==searched_list)
                         ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");
-                        else
-                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
+                        else*/
+                        ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");//.addToBackStack("HEADLINES");
                         actionBar.setTitle("Headlines");
                         myMenu.findItem(R.id.app_bar_search).setVisible(true);
                         myMenu.findItem(R.id.location).setVisible(true);
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity{
                                             public void onClick(DialogInterface dialog, int id) {
                                                 mDrawerLayout.closeDrawer(GravityCompat.START);
                                                 FragmentTransaction ft = fm.beginTransaction();
-                                                ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES").addToBackStack("HEADLINES");
+                                                ft.replace(R.id.headlines_list,new HeadlinesViewFragment(mContext,list,fm,myMenu,actionBar,mSwipeRefresh),"HEADLINES");//.addToBackStack("HEADLINES");
                                                 actionBar.setTitle("Headlines");
                                                 myMenu.findItem(R.id.location).setVisible(true);
                                                 headlineFrame.setBackgroundColor(Color.WHITE);
@@ -678,6 +678,25 @@ public class MainActivity extends AppCompatActivity{
         if(mDrawerLayout.isDrawerOpen(GravityCompat.START)){
             exitFlag=1;
             mDrawerLayout.closeDrawer(GravityCompat.START);
+            return;
+        }
+        if(actionBar.getTitle().equals("Saved Articles")){
+            //Toast.makeText(mContext, "this is test", Toast.LENGTH_SHORT).show();
+            actionBar.setTitle("Headlines");
+            myMenu.findItem(R.id.app_bar_search).setVisible(true);
+            myMenu.findItem(R.id.location).setVisible(true);
+            mSwipeRefresh.setEnabled(true);
+            searchView.setIconified(true);
+            current_list=list;
+            no_article.setVisibility(View.INVISIBLE);
+            exitFlag=1;
+            if(getSupportFragmentManager().getBackStackEntryCount()==0){
+                FragmentTransaction ft = fm.beginTransaction();
+                ft.replace(R.id.headlines_list, new HeadlinesViewFragment(mContext, list, fm, myMenu, actionBar, mSwipeRefresh), "HEADLINES");
+                ft.commit();
+                return;
+            }
+                super.onBackPressed();
             return;
         }
         if(!searchView.isIconified() && current_list!=list) {
