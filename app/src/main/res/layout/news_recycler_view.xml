@@ -31,6 +31,14 @@
                 android:layout_height="250sp"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:layout_editor_absoluteX="8dp" />
+             <ProgressBar
+                android:background="@android:color/background_light"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:id="@+id/imageProgress"
+                app:layout_constraintTop_toTopOf="@+id/news_card"
+                tools:layout_editor_absoluteX="0dp"
+                android:padding="110dp"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
