@@ -10,6 +10,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,7 +58,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
     @SuppressLint("ResourceAsColor")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
         holder.test.setText(news.get(position).getTitle());
 
         //Converting the published date to user Readable date/time
@@ -96,7 +97,23 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
                 .fit()
                 .centerCrop()
                 .placeholder(R.drawable.imageload)
-                .into(holder.news_card);
+                .error(R.drawable.error_img)
+                .into(holder.news_card,new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        if (holder.imageProgressBar != null) {
+                            holder.imageProgressBar.setVisibility(View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        if (holder.imageProgressBar != null) {
+                            holder.imageProgressBar.setVisibility(View.GONE);
+                        }
+                    }
+
+                });
     }
 
     public String getTimeZoneName(String countryCode){
@@ -122,12 +139,14 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         private ImageView news_card;
         private CardView card_view;
         private TextView publishDate;
+        private ProgressBar imageProgressBar;
         public MyViewHolder(@NonNull View view) {
             super(view);
             test=view.findViewById(R.id.test);
             publishDate=view.findViewById(R.id.dateShow);
             news_card=view.findViewById(R.id.news_card);
             card_view=view.findViewById(R.id.card);
+            imageProgressBar=view.findViewById(R.id.imageProgress);
         }
     }
 }
