@@ -70,14 +70,15 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
             Log.d("DEBJOY",e.getMessage());
         }
         SimpleDateFormat outputFormat = new SimpleDateFormat("dd", Locale.ENGLISH);
-        outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        //outputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        //outputFormat.setTimeZone(TimeZone.getTimeZone("IN"));
         if(outputFormat.format(new Date()).equals(outputFormat.format(date))){
             outputFormat = new SimpleDateFormat("h:mm a", Locale.ENGLISH);
-            outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+            outputFormat.setTimeZone(TimeZone.getTimeZone(getTimeZoneName(news.get(position).getLocation())));
             holder.publishDate.setText(outputFormat.format(date));
         }else{
             outputFormat = new SimpleDateFormat("dd MMM yy", Locale.ENGLISH);
-            outputFormat.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+            outputFormat.setTimeZone(TimeZone.getTimeZone(getTimeZoneName(news.get(position).getLocation())));
             String dateValue[]=outputFormat.format(date).split(" ",0);
             holder.publishDate.setText(dateValue[0]+" "+dateValue[1]+"'"+dateValue[2]);
         }
@@ -96,6 +97,20 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
                 .centerCrop()
                 .placeholder(R.drawable.imageload)
                 .into(holder.news_card);
+    }
+
+    public String getTimeZoneName(String countryCode){
+        switch(countryCode){
+            case "au":return "Australia/ACT";
+            case "de":return "Etc/GMT+2";
+            case "fr":return "Etc/GMT+2";
+            case "gb":return "Etc/GMT+1";
+            case "in":return "Asia/Kolkata";
+            case "jp":return "Japan";
+            case "ru":return "Etc/GMT+3";
+            case "us":return "US/Central";
+            case "za":return "Etc/GMT+2";}
+        return "Asia/Kolkata";
     }
     @Override
     public int getItemCount() {
