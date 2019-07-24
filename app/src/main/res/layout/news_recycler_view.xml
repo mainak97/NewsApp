@@ -31,7 +31,19 @@
                 android:layout_height="250sp"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:layout_editor_absoluteX="8dp" />
-             <ProgressBar
+
+            <TextView
+                android:id="@+id/source"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/colorPrimary"
+                android:elevation="10dp"
+                android:padding="10dp"
+                android:text=""
+                android:textColor="@android:color/background_light"
+                app:layout_constraintBottom_toTopOf="@+id/test"
+                app:layout_constraintStart_toStartOf="parent" />
+            <ProgressBar
                 android:background="@android:color/background_light"
                 android:layout_width="match_parent"
                 android:layout_height="250dp"
@@ -53,17 +65,30 @@
                 android:id="@+id/test"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:ellipsize="end"
-                android:gravity="center"
-                android:padding="10sp"
+                android:gravity="left"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="3dp"
                 android:textColor="#000"
-                android:textSize="20sp"
-                app:fontFamily="@font/adamina"
+                android:textSize="18sp"
+                android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/news_card" />
+
+            <TextView
+                android:id="@+id/content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="10dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/test"
+                android:text=""/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.cardview.widget.CardView>
