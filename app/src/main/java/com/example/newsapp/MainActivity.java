@@ -274,7 +274,7 @@ public class MainActivity extends AppCompatActivity{
                             try {
                                 JSONObject temp = a.getJSONObject(i);
                                 r.beginTransaction();
-                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url"),temp.getString("publishedAt"),location));
+                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url"),temp.getString("publishedAt"),location,temp.getJSONObject("source").getString("name"),temp.getString("author"),temp.getString("content")));
                                 r.commitTransaction();
                             }
                             catch (Exception e) {
@@ -356,7 +356,7 @@ public class MainActivity extends AppCompatActivity{
                             try {
                                 JSONObject temp = a.getJSONObject(i);
                                 r.beginTransaction();
-                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url"),temp.getString("publishedAt"),"SER"));
+                                r.copyToRealm(new News(temp.getString("title"),temp.getString("urlToImage"),temp.getString("url"),temp.getString("publishedAt"),"SER",temp.getJSONObject("source").getString("name"),temp.getString("author"),temp.getString("content")));
                                 r.commitTransaction();
                             }
                             catch (Exception e) {

@@ -114,6 +114,17 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
                     }
 
                 });
+        String contentExtract=news.get(position).getContent();
+        if(contentExtract.length()>200){
+            contentExtract=contentExtract.substring(0,199)+ "...";
+        }
+        if(contentExtract.indexOf("[+")!=-1)
+            contentExtract=contentExtract.substring(0,contentExtract.indexOf("[+"));
+        if(!news.get(position).getAuthor().equals("null"))
+            contentExtract+=" ~"+news.get(position).getAuthor();
+        holder.content.setText(contentExtract);
+
+        holder.source.setText(news.get(position).getSource());
     }
 
     public String getTimeZoneName(String countryCode){
@@ -140,13 +151,17 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         private CardView card_view;
         private TextView publishDate;
         private ProgressBar imageProgressBar;
+        private TextView content;
+        private TextView source;
         public MyViewHolder(@NonNull View view) {
             super(view);
             test=view.findViewById(R.id.test);
             publishDate=view.findViewById(R.id.dateShow);
             news_card=view.findViewById(R.id.news_card);
             card_view=view.findViewById(R.id.card);
+            content=view.findViewById(R.id.content);
             imageProgressBar=view.findViewById(R.id.imageProgress);
+            source=view.findViewById(R.id.source);
         }
     }
 }

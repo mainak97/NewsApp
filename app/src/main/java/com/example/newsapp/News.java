@@ -11,6 +11,33 @@ public class News extends RealmObject {
     private long timestamp;
     private boolean saved;
     private String publishDate;
+    private String source;
+    private String author;
+    private String content;
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
 
     public String getLocation() {
         return location;
@@ -25,7 +52,7 @@ public class News extends RealmObject {
 
     public News(){
     }
-    public News(String title,String image_url,String article_url,String publishDate,String location){
+    public News(String title,String image_url,String article_url,String publishDate,String location,String source,String author,String content){
         this.title=title;
         this.image_url=image_url;
         this.article_url=article_url;
@@ -33,6 +60,9 @@ public class News extends RealmObject {
         this.publishDate=publishDate;
         this.saved=false;
         this.location=location;
+        this.source=source;
+        this.author=author;
+        this.content=content;
     }
 
     public String getPublishDate() {
