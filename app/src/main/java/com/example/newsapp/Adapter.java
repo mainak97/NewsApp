@@ -3,6 +3,7 @@ import android.annotation.SuppressLint;
 import androidx.appcompat.app.ActionBar;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,11 +18,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ShareCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
@@ -97,6 +101,8 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
                 .fit()
                 .centerCrop()
                 .placeholder(R.drawable.imageload)
+                .networkPolicy(NetworkPolicy.NO_CACHE)
+                .memoryPolicy(MemoryPolicy.NO_CACHE)
                 .error(R.drawable.error_img)
                 .into(holder.news_card,new com.squareup.picasso.Callback() {
                     @Override
@@ -125,6 +131,18 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         holder.content.setText(contentExtract);
 
         holder.source.setText(news.get(position).getSource());
+
+        holder.share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(Intent.ACTION_SEND);
+                i.setType("text/plain");
+                i.putExtra(Intent.EXTRA_SUBJECT, "Sharing URL");
+                i.putExtra(Intent.EXTRA_TEXT, news.get(position).getArticle_url());
+                mContext.startActivity(Intent.createChooser(i, "Share URL"));
+
+            }
+        });
     }
 
     public String getTimeZoneName(String countryCode){
@@ -152,11 +170,13 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
         private TextView publishDate;
         private ProgressBar imageProgressBar;
         private TextView content;
+        private ImageView share;
         private TextView source;
         public MyViewHolder(@NonNull View view) {
             super(view);
             test=view.findViewById(R.id.test);
             publishDate=view.findViewById(R.id.dateShow);
+            share=view.findViewById(R.id.share);
             news_card=view.findViewById(R.id.news_card);
             card_view=view.findViewById(R.id.card);
             content=view.findViewById(R.id.content);

@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onCreate(Bundle savedInstanceState) {
         try{
             r = Realm.getDefaultInstance();
+
         }catch (Exception e){
             //Get a Realm instance for this thread
             RealmConfiguration config = new RealmConfiguration.Builder()
