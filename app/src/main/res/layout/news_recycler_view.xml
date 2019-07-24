@@ -42,7 +42,9 @@
                 android:text=""
                 android:textColor="@android:color/background_light"
                 app:layout_constraintBottom_toTopOf="@+id/test"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent" >
+
+            </TextView>
             <ProgressBar
                 android:background="@android:color/background_light"
                 android:layout_width="match_parent"
@@ -51,6 +53,19 @@
                 app:layout_constraintTop_toTopOf="@+id/news_card"
                 tools:layout_editor_absoluteX="0dp"
                 android:padding="110dp"/>
+
+            <ImageButton
+                android:id="@+id/share"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/background_light"
+                android:paddingLeft="8dp"
+                android:paddingTop="6dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="6dp"
+                android:src="@drawable/ic_share_black_24dp"
+                app:layout_constraintBottom_toTopOf="@+id/test"
+                app:layout_constraintStart_toEndOf="@+id/source" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
