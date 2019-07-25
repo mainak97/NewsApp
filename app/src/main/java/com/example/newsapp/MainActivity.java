@@ -809,13 +809,13 @@ public class MainActivity extends AppCompatActivity{
                 }
                 ft.commit();
                 actionBar.setTitle("Saved Articles");
+                headlinesDrawer.setChecked(true);
                 //current_list=saved_list;
                 if(saved_list.size()==0)
                     no_article.setVisibility(View.VISIBLE);
                 else
                     no_article.setVisibility(View.INVISIBLE);
-                headlinesDrawer.setChecked(true);
-                headlineFrame.setBackgroundColor(Color.WHITE);
+                //headlineFrame.setBackgroundColor(Color.WHITE);
                 navigationView.getMenu().findItem(R.id.nav_saved_list).setChecked(true);
                 return;
             }
