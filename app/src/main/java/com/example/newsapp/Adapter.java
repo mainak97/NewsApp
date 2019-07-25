@@ -119,6 +119,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
 
                 });
         String contentExtract=news.get(position).getContent();
+        contentExtract=contentExtract.equals("null")?"":contentExtract;
         if(contentExtract.length()>200){
             contentExtract=contentExtract.substring(0,199)+ "...";
         }
