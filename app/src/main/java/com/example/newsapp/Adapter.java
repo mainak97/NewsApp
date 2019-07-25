@@ -100,9 +100,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyViewHolder> {
                 .load(news.get(position).getImage_url())
                 .fit()
                 .centerCrop()
-                .placeholder(R.drawable.imageload)
-                .networkPolicy(NetworkPolicy.NO_CACHE)
-                .memoryPolicy(MemoryPolicy.NO_CACHE)
+                .placeholder(R.drawable.imageload)//.networkPolicy(NetworkPolicy.NO_CACHE).memoryPolicy(MemoryPolicy.NO_CACHE)
                 .error(R.drawable.error_img)
                 .into(holder.news_card,new com.squareup.picasso.Callback() {
                     @Override
