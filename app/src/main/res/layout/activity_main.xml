@@ -11,16 +11,37 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <TextView
+        <LinearLayout
             android:id="@+id/no_articles"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            android:orientation="vertical">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:alpha="0.6"
+                android:gravity="center"
+                tools:ignore="UnusedAttribute"
+                android:src="@drawable/ic_saved_list_black_24dp"/>
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="@string/no_articles_saved_yet"
+            android:layout_height="wrap_content"
+            android:text="You have no saved articles yet."
             android:gravity="center"
-            android:textSize="30sp"
-            android:fontFamily="@font/adamina"
             tools:ignore="UnusedAttribute"
-            android:visibility="invisible"/>
+            android:textSize="22sp"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Save articles to read later"
+                android:textSize="15sp"
+                tools:ignore="UnusedAttribute"
+                />
+        </LinearLayout>
+
     </FrameLayout>
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:layout_width="wrap_content"
