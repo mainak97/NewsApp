@@ -559,16 +559,21 @@ public class MainActivity extends AppCompatActivity{
         if(item.getItemId()==R.id.addButton){
             //optionSelect();
             WebView w=findViewById(R.id.article_new);
-            News temp=r.where(News.class).equalTo("article_url",w.getUrl()).findFirst();
+            String urlfetched="";
+             MenuItem urlPass=myMenu.findItem(R.id.urlPass);
+             urlfetched=String.valueOf(urlPass);
+
+            News temp=r.where(News.class).equalTo("article_url",urlfetched).findFirst();
             //Log.i("Mainak",w.getUrl());Log.i("Mainak",temp.toString());
             if(temp==null){
-                Toast.makeText(this,"Cannot Save :/",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"Cannot Save :/ ",Toast.LENGTH_SHORT).show();
+
                 return true;
             }
             if(temp.isSaved()) {
                 item.setIcon(R.drawable.add);
                 r.beginTransaction();
-                r.where(News.class).equalTo("article_url", w.getUrl()).findFirst().setSaved(false);
+                r.where(News.class).equalTo("article_url", urlfetched).findFirst().setSaved(false);
                 r.commitTransaction();
                 /*
                 FragmentTransaction ft=fm.beginTransaction();
@@ -590,7 +595,7 @@ public class MainActivity extends AppCompatActivity{
             else{
                 item.setIcon(R.drawable.ic_done_black_24dp);
                 r.beginTransaction();
-                r.where(News.class).equalTo("article_url", w.getUrl()).findFirst().setSaved(true);
+                r.where(News.class).equalTo("article_url", urlfetched).findFirst().setSaved(true);
                 r.commitTransaction();
                 no_article.setVisibility(View.INVISIBLE);
                 mSharedPrefernces=getApplicationContext().getSharedPreferences("Location",0);

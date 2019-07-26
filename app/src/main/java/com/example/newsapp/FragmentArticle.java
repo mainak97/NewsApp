@@ -40,6 +40,8 @@ public class FragmentArticle extends Fragment{
         spinner=view.findViewById(R.id.loadingPage);
 
         MenuItem searchViewItem = myMenu.findItem(R.id.app_bar_search);
+        MenuItem urlPass=myMenu.findItem(R.id.urlPass);
+        urlPass.setTitle(news.getArticle_url());
         SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchViewItem);
         while(!searchView.isIconified()){searchView.setIconified(true);}
 
