@@ -15,5 +15,10 @@
         android:title=""
         app:showAsAction="always"
         android:icon="@drawable/add"/>
+    <item
+        android:id="@+id/urlPass"
+        android:title=""
+        android:visible="false"
+        />
 
 </menu>
