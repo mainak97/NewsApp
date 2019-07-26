@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity{
     private int headFlag=1;
     private int selectedPosition=0;
     private ProgressBar loadingFirst;
-    private TextView no_article;
+    private LinearLayout no_article;
     RealmResults<News> list;
     RealmResults<News> saved_list;
     RealmResults<News> current_list;
