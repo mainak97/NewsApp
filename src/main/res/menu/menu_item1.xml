@@ -1,0 +1,24 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/app_bar_search"
+        android:title="Search"
+        app:showAsAction="ifRoom|withText"
+        app:actionViewClass="android.widget.SearchView"/>
+    <item
+        android:id="@+id/location"
+        android:title="IN"
+        app:showAsAction="always"
+        app:itemTextAppearance="@style/menu_text_style"/>
+    <item
+        android:id="@+id/addButton"
+        android:title=""
+        app:showAsAction="always"
+        android:icon="@drawable/add"/>
+    <item
+        android:id="@+id/urlPass"
+        android:title=""
+        android:visible="false"
+        />
+
+</menu>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/nav_headline"
+            android:icon="@drawable/headline_icon"
+            android:title="@string/headlines"/>
+
+        <item android:id="@+id/nav_saved_list"
+            android:icon="@drawable/ic_saved_list_black_24dp"
+            android:title="@string/saved_articles"/>
+        <item android:id="@+id/nav_clear_cache"
+            android:icon="@drawable/ic_delete_black_24dp"
+            android:title="Clear Cache"/>
+    </group>
+
+</menu>
